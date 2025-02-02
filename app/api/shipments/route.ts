@@ -91,12 +91,13 @@ export async function POST(req: Request) {
 
   const token = req.headers.get("Authorization")?.split(" ")[1]
   if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized abc" }, { status: 401 })
   }
 
   const decodedToken = verifyToken(token)
-  if (!decodedToken || !decodedToken.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  console.log('Decoded Token:', decodedToken);
+  if (!decodedToken || !decodedToken.adminId) {
+    return NextResponse.json({ error: "Unauthorized abc" }, { status: 401 })
   }
 
   try {

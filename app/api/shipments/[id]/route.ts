@@ -15,8 +15,9 @@ export async function PUT(
   }
 
   const decodedToken = verifyToken(token)
+  console.log('Decoded Token:', decodedToken);
   if (!decodedToken || !decodedToken.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized Acess" }, { status: 401 })
   }
 
   try {
