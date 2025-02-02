@@ -87,17 +87,17 @@ export default function Footer() {
             <ul className="space-y-2">
               <li className="flex items-center">
                 <Phone className="w-5 h-5 mr-2" />
-                <span>+91 1234567890</span>
+                <span>+91 9368108590</span>
               </li>
               <li className="flex items-center">
                 <Mail className="w-5 h-5 mr-2" />
-                <a href="mailto:info@agarwalhomepacker.in" className="hover:text-white">
-                  info@agarwalhomepacker.in
+                <a href="mailto:info@agarwalpackersnmovers.in" className="hover:text-white">
+                  info@agarwalpackersnmovers.in
                 </a>
               </li>
               <li className="flex items-start">
                 <MapPin className="w-5 h-5 mr-2 mt-1" />
-                <span>123 Relocation Street, Moving City, State - 123456, India</span>
+                <span>175, EC Road, Race Course, Dehradun, Uttarakhand 248001, India</span>
               </li>
             </ul>
           </div>

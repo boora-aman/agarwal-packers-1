@@ -20,9 +20,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold">Address</h3>
                   <p className="text-gray-600">
-                    123 Relocation Street, Moving City,
-                    <br />
-                    State - 123456, India
+                    175, EC Road, Race Course, Dehradun, Uttarakhand 248001, India
                   </p>
                 </div>
               </div>
@@ -30,14 +28,14 @@ export default function ContactPage() {
                 <Phone className="w-6 h-6 text-primary" />
                 <div>
                   <h3 className="font-semibold">Phone</h3>
-                  <p className="text-gray-600">+91 1234567890</p>
+                  <p className="text-gray-600">+91 9368108590</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <Mail className="w-6 h-6 text-primary" />
                 <div>
                   <h3 className="font-semibold">Email</h3>
-                  <p className="text-gray-600">info@agarwalhomepacker.in</p>
+                  <p className="text-gray-600">info@agarwalpackersnmovers.in</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">

@@ -29,7 +29,7 @@ export default function ContactSection() {
                 <Phone className="w-6 h-6 text-primary" />
                 <div>
                   <h3 className="font-semibold">Phone</h3>
-                  <p className="text-gray-600">+91 XXXXXXXXXX</p>
+                  <p className="text-gray-600">+91 93681 08590</p>
                 </div>
               </div>
 
@@ -37,7 +37,7 @@ export default function ContactSection() {
                 <Mail className="w-6 h-6 text-primary" />
                 <div>
                   <h3 className="font-semibold">Email</h3>
-                  <p className="text-gray-600">info@agarwalhomepacker.in</p>
+                  <p className="text-gray-600">info@agarwalpackersnmovers.in</p>
                 </div>
               </div>
 
@@ -45,7 +45,7 @@ export default function ContactSection() {
                 <MapPin className="w-6 h-6 text-primary" />
                 <div>
                   <h3 className="font-semibold">Address</h3>
-                  <p className="text-gray-600">Your Business Address Here</p>
+                  <p className="text-gray-600"> 175, EC Road, Race Course, Dehradun, Uttarakhand 248001, India</p>
                 </div>
               </div>
             </div>
