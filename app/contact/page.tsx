@@ -1,5 +1,5 @@
-import ContactSection from "@/components/contact-section"
-import { MapPin, Phone, Mail, Clock } from "lucide-react"
+import ContactSection from "@/components/contact-section";
+import { MapPin, Phone, Mail, Clock } from "lucide-react";
 
 export default function ContactPage() {
   return (
@@ -51,15 +51,22 @@ export default function ContactPage() {
               </div>
             </div>
           </div>
-          <div className="h-[400px] bg-gray-200 rounded-lg">
-            {/* Replace this div with an actual map component or embed a Google Map here */}
-            <div className="w-full h-full flex items-center justify-center text-gray-500">Map placeholder</div>
+
+          <div className="h-[400px] bg-gray-200 rounded-lg overflow-hidden">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d55117.12178814485!2d77.97714280046951!3d30.299182347569943!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3909295d419d35d7%3A0x88d6e90ed94995d0!2sAgarwal%20Packers%20and%20Movers%20Dehradun!5e0!3m2!1sen!2sin!4v1738529649493!5m2!1sen!2sin"
+              width="100%"
+              height="100%"
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full h-full border-0"
+            ></iframe>
           </div>
         </div>
 
         <ContactSection />
       </div>
     </main>
-  )
+  );
 }
-
