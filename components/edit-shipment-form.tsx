@@ -37,34 +37,22 @@ interface EditShipmentFormProps {
   onUpdate: (updatedShipment: ShipmentData) => void
 }
 
-// Helper function to format date for datetime-local input
-const formatDateForInput = (dateString: string): string => {
-  try {
-    const date = new Date(dateString);
-    // Format: YYYY-MM-DDThh:mm
-    return date.toISOString().slice(0, 16);
-  } catch (error) {
-    console.error("Error formatting date:", dateString, error);
-    return new Date().toISOString().slice(0, 16);
-  }
-};
 
 export default function EditShipmentForm({ shipment, onClose, onUpdate }: EditShipmentFormProps) {
-  // Format dates before setting initial state
-  const formattedShipment = {
-    ...shipment,
-    estimatedDelivery: shipment.estimatedDelivery,
-    bookingDate: shipment.bookingDate,
-    transitStops: shipment.transitStops.map(stop => ({
-      ...stop,
-      expectedArrival: stop.expectedArrival,
-      expectedDeparture: stop.expectedDeparture
-    }))
-  };
-
-  const [formData, setFormData] = useState<ShipmentData>(formattedShipment)
+  const [formData, setFormData] = useState<ShipmentData>(shipment)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return ""; // Handle null or undefined cases
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
 
   const handleInputChange = (field: keyof ShipmentData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -102,13 +90,24 @@ export default function EditShipmentForm({ shipment, onClose, onUpdate }: EditSh
     setError("")
     setLoading(true)
 
+    const dataToSend = {
+      ...formData,
+      estimatedDelivery: new Date(formData.estimatedDelivery).toISOString(),
+      bookingDate: new Date(formData.bookingDate).toISOString(),
+      transitStops: formData.transitStops.map(stop => ({
+        ...stop,
+        expectedArrival: new Date(stop.expectedArrival).toISOString(),
+        expectedDeparture: new Date(stop.expectedDeparture).toISOString(),
+      })),
+    };
+
     try {
       const response = await fetch(`/api/shipments/${formData._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(dataToSend), // Send the converted data
       })
 
       const data = await response.json()
@@ -167,7 +166,7 @@ export default function EditShipmentForm({ shipment, onClose, onUpdate }: EditSh
                 id="estimatedDelivery"
                 type="datetime-local"
                 value={formatDateForInput(formData.estimatedDelivery)}
-                onChange={(e) => handleInputChange("estimatedDelivery", new Date(e.target.value).toISOString())}
+                onChange={(e) => handleInputChange("estimatedDelivery",e.target.value)}
               />
             </div>
           </div>
@@ -213,7 +212,7 @@ export default function EditShipmentForm({ shipment, onClose, onUpdate }: EditSh
                     <Input
                       type="datetime-local"
                       value={formatDateForInput(stop.expectedArrival)}
-                      onChange={(e) => handleTransitStopChange(index, "expectedArrival", new Date(e.target.value).toISOString())}
+                      onChange={(e) => handleTransitStopChange(index, "expectedArrival", e.target.value)}
                     />
                   </div>
 
@@ -222,7 +221,7 @@ export default function EditShipmentForm({ shipment, onClose, onUpdate }: EditSh
                     <Input
                       type="datetime-local"
                       value={formatDateForInput(stop.expectedDeparture)}
-                      onChange={(e) => handleTransitStopChange(index, "expectedDeparture", new Date(e.target.value).toISOString())}
+                      onChange={(e) => handleTransitStopChange(index, "expectedDeparture", e.target.value)}
                     />
                   </div>
 
