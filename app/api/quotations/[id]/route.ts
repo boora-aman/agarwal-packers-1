@@ -5,11 +5,13 @@ import { verifyToken } from "@/lib/auth"
 
 async function authenticateRequest(req: Request) {
   const token = req.headers.get("Authorization")?.split(" ")[1]
+  console.log("Token:", token)
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const decodedToken = verifyToken(token)
+  console.log("Decoded Token:", decodedToken)
   if (!decodedToken || !decodedToken.adminId) {
     return NextResponse.json({ error: "Unauthorized Access" }, { status: 401 })
   }

@@ -155,7 +155,7 @@ export default function ConsignmentPage() {
         const data = await response.json()
         setError(data.error || "Failed to add shipment")
         if (response.status === 401) {
-          router.push("/admin/login")
+          router.push("/admin/consignment")
         }
       }
     } catch (error) {

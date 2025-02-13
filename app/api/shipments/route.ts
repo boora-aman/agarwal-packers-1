@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server"
 import dbConnect from "@/lib/mongodb"
 import Shipment from "@/models/Shipment"
-import { verifyToken } from "@/lib/auth"
+import {verifyToken } from "@/lib/auth"
 
 export async function GET(req: Request) {
   await dbConnect()
 
   const { searchParams } = new URL(req.url)
   const trackingNumber = searchParams.get("trackingNumber")
-  console.log("GET /api/shipments - Search params:", searchParams.toString())
-  console.log("GET /api/shipments - Tracking number:", trackingNumber)
 
   try {
     if (trackingNumber) {
@@ -91,7 +89,7 @@ export async function POST(req: Request) {
 
   const token = req.headers.get("Authorization")?.split(" ")[1]
   if (!token) {
-    return NextResponse.json({ error: "Unauthorized abc" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const decodedToken = verifyToken(token)
