@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { generatePDF } from "@/utils/generatePDF";
+import { Loader2 } from "lucide-react";
 import Cookies from "js-cookie";
 
 export default function DownloadQuotation({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [quotation, setQuotation] = useState<any>(null);
-  const [wordFile, setWordFile] = useState<File | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     fetchQuotation();
@@ -32,29 +33,59 @@ export default function DownloadQuotation({ params }: { params: { id: string } }
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      setWordFile(event.target.files[0]);
+  const handleDownload = async () => {
+    if (!quotation) {
+      alert("Quotation data not available.");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      // Fetch the template from public folder
+      const templateResponse = await fetch('/templates/quotation-template.docx');
+      const templateBlob = await templateResponse.blob();
+      const templateFile = new File([templateBlob], 'quotation-template.docx', {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      });
+
+      await generatePDF(quotation, templateFile);
+    } catch (error) {
+      console.error('Error generating document:', error);
+      alert('Failed to generate document. Please try again.');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
-  const handleDownload = () => {
-    if (quotation && wordFile) {
-      generatePDF(quotation, wordFile);
-    } else {
-      alert("Please select a template file before downloading.");
-    }
-  };
-
-  if (!quotation) return <p>Loading...</p>;
+  if (!quotation) return (
+    <div className="flex justify-center items-center min-h-screen">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
+  );
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Download Quotation</h1>
       
-      <input type="file" accept=".docx" onChange={handleFileChange} className="mb-4" />
+      <div className="mb-4">
+        <p className="text-gray-600">Quotation Number: {quotation.quotationNo}</p>
+        <p className="text-gray-600">Customer: {quotation.customerName}</p>
+      </div>
       
-      <Button onClick={handleDownload}>Download PDF</Button>
+      <Button 
+        onClick={handleDownload} 
+        disabled={isGenerating}
+        className="flex items-center gap-2"
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Generating Document...
+          </>
+        ) : (
+          'Download Document'
+        )}
+      </Button>
     </div>
   );
 }

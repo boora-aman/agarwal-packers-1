@@ -1,61 +1,99 @@
 import { saveAs } from "file-saver";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import Mammoth from "mammoth";
-
-// Function to extract text from a Word template
-async function extractTextFromDocx(file: File) {
-  const reader = new FileReader();
-  return new Promise<string>((resolve, reject) => {
-    reader.onload = async (event) => {
-      if (event.target && event.target.result) {
-        const arrayBuffer = event.target.result as ArrayBuffer;
-        const result = await Mammoth.extractRawText({ arrayBuffer });
-        resolve(result.value);
-      }
-    };
-    reader.onerror = (error) => reject(error);
-    reader.readAsArrayBuffer(file);
-  });
-}
+import PizZip from 'pizzip';
+import Docxtemplater from 'docxtemplater';
 
 // Function to generate a PDF
 export async function generatePDF(quotationData: any, wordFile: File) {
   try {
-    const extractedText = await extractTextFromDocx(wordFile);
+    const arrayBuffer = await wordFile.arrayBuffer();
+    
+    // Format date properly
+    const formattedDate = quotationData.date 
+      ? new Date(quotationData.date.$date || quotationData.date).toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        })
+      : '';
 
-    // Replace placeholders in the extracted text with actual data
-    let pdfContent = extractedText
-      .replace("{quotationNo}", quotationData.quotationNo)
-      .replace("{date}", new Date(quotationData.date.$date).toLocaleDateString())
-      .replace("{customerName}", quotationData.customerName)
-      .replace("{address}", quotationData.address)
-      .replace("{mobileNo}", quotationData.mobileNo)
-      .replace("{email}", quotationData.email)
-      .replace("{fromCity}", quotationData.fromCity)
-      .replace("{toCity}", quotationData.toCity)
-      .replace("{freightCharges}", quotationData.charges.freightCharges.toString())
-      .replace("{carTransportationCharges}", quotationData.charges.carTransportationCharges.toString());
+    // Create replacements object
+    const replacements = {
+      quotationNo: quotationData.quotationNo || '',
+      date: formattedDate,
+      customerName: quotationData.customerName || '',
+      address: quotationData.address || '',
+      mobileNo: quotationData.mobileNo || '',
+      email: quotationData.email || '',
+      fromCity: quotationData.fromCity || '',
+      toCity: quotationData.toCity || '',
+      vehicleType: quotationData.vehicleType || '',
+      freightCharges: quotationData.charges?.freightCharges?.toString() || '0',
+      carTransportationCharges: quotationData.charges?.carTransportationCharges?.toString() || '0',
+      packingCharges: quotationData.charges?.packingCharges?.toString() || '0',
+      unpackingCharges: quotationData.charges?.unpackingCharges?.toString() || '0',
+      loadingCharges: quotationData.charges?.loadingCharges?.toString() || '0',
+      unloadingCharges: quotationData.charges?.unloadingCharges?.toString() || '0',
+      installationCharges: quotationData.charges?.installationCharges?.toString() || '0',
+      stationeryCharges: quotationData.charges?.stationeryCharges?.toString() || 'U/B',
+      tollCharges: quotationData.charges?.tollCharges?.toString() || 'N/A',
+      gstCharges: quotationData.charges?.gstCharges?.toString() || 'Extra',
+      insuranceCharges: quotationData.charges?.insuranceCharges?.toString() || 'Extra',
+      totalAmount: quotationData.totalAmount || calculateTotal(quotationData.charges),
+    };
 
-    // Create a PDF document
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([600, 800]);
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontSize = 12;
+    // Initialize template with PizZip
+    const zip = new PizZip(arrayBuffer);
+    
+    // Create docxtemplater instance
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true
+    });
+    
+    // Set the template variables
+    doc.setData(replacements);
 
-    // Add text to the PDF
-    const lines = pdfContent.split("\n");
-    let yPosition = 750;
+    try {
+      // Render the document (replace all placeholders with values)
+      doc.render();
+    } catch (error) {
+      console.error('Error rendering document:', error);
+      throw error;
+    }
 
-    lines.forEach((line) => {
-      page.drawText(line, { x: 50, y: yPosition, font, size: fontSize, color: rgb(0, 0, 0) });
-      yPosition -= 20;
+    // Get the modified document as a blob
+    const docBlob = doc.getZip().generate({
+      type: 'blob',
+      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     });
 
-    // Save the PDF
-    const pdfBytes = await pdfDoc.save();
-    const blob = new Blob([pdfBytes], { type: "application/pdf" });
-    saveAs(blob, `Quotation_${quotationData.quotationNo}.pdf`);
+    // Save the DOCX file
+    saveAs(docBlob, `Quotation_${quotationData.quotationNo}.docx`);
   } catch (error) {
-    console.error("Error generating PDF:", error);
+    console.error("Error generating document:", error);
+    throw error;
   }
+}
+
+// Helper function to calculate total amount
+function calculateTotal(charges: any) {
+  if (!charges) return '0';
+  
+  const chargeTypes = [
+    'freightCharges',
+    'carTransportationCharges',
+    'packingCharges',
+    'unpackingCharges',
+    'loadingCharges',
+    'unloadingCharges',
+    'installationCharges',
+    'stationeryCharges',
+    'tollCharges',
+    'gstCharges',
+    'insuranceCharges'
+  ];
+
+  return chargeTypes
+    .reduce((total, type) => total + (Number(charges[type]) || 0), 0)
+    .toString();
 }
