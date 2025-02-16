@@ -51,7 +51,7 @@ export default function QuotationsList({ quotations }: QuotationsListProps) {
           </div>
           <div className="flex space-x-2">
             <Button variant="outline" asChild>
-              <Link href={`/admin/billing/quotations/${quotation._id}`}>View</Link>
+              <Link href={`/admin/billing/quotations/${quotation._id}/download`}>Download</Link>
             </Button>
             <Button variant="outline" asChild>
               <Link href={`/admin/billing/quotations/${quotation._id}/edit`}>Edit</Link>

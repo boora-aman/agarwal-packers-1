@@ -61,6 +61,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
   try {
     const deletedQuotation = await Quotation.findByIdAndDelete(params.id)
+    
     if (!deletedQuotation) {
       return NextResponse.json({ error: "Quotation not found" }, { status: 404 })
     }

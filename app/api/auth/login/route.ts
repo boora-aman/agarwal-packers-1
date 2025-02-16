@@ -28,9 +28,13 @@ export async function POST(req: Request) {
 
     console.log("Password matched, generating token");
     const token = jwt.sign(
-      { adminId: admin._id }, 
+      { 
+        adminId: admin._id,
+        username: admin.username,
+        email: admin.email
+      }, 
       process.env.NEXTAUTH_SECRET!, 
-      { expiresIn: "1h" }
+      { expiresIn: "24h" }
     );
 
     console.log("Login successful for admin:", username);

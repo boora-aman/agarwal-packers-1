@@ -6,17 +6,20 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Loader2 } from "lucide-react"
 import Cookies from "js-cookie"
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setIsLoading(true)
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -32,7 +35,7 @@ export default function AdminLoginPage() {
           // Store token and set admin cookie
           Cookies.set("token", data.token, { path: "/" })
           Cookies.set("adminLoggedIn", "true", { path: "/" })
-          router.push("/admin/dashboard")
+          router.push("/admin")
         } else {
           setError("You do not have admin privileges")
         }
@@ -41,6 +44,8 @@ export default function AdminLoginPage() {
       }
     } catch (err) {
       setError("An error occurred. Please try again.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -62,6 +67,7 @@ export default function AdminLoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                disabled={isLoading}
                 required
               />
             </div>
@@ -74,6 +80,7 @@ export default function AdminLoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
                 required
               />
             </div>
@@ -82,8 +89,19 @@ export default function AdminLoginPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Button type="submit" className="w-full">
-              Login
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                'Login'
+              )}
             </Button>
           </form>
         </CardContent>

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import dbConnect from "@/lib/mongodb"
 import Shipment from "@/models/Shipment"
 import {verifyToken } from "@/lib/auth"
-
+import jwt from "jsonwebtoken"
 export async function GET(req: Request) {
   await dbConnect()
 
@@ -93,9 +93,19 @@ export async function POST(req: Request) {
   }
 
   const decodedToken = verifyToken(token)
-  console.log('Decoded Token:', decodedToken);
-  if (!decodedToken || !decodedToken.adminId) {
-    return NextResponse.json({ error: "Unauthorized abc" }, { status: 401 })
+  if (!decodedToken) {
+    return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+  }
+  
+  if ('error' in decodedToken) {
+    if (decodedToken.error === 'TOKEN_EXPIRED') {
+      return NextResponse.json({ error: "Token expired", code: "TOKEN_EXPIRED" }, { status: 401 })
+    }
+    return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+  }
+
+  if (!decodedToken.adminId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   try {

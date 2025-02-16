@@ -5,22 +5,42 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FileText, Truck } from "lucide-react"
 import Cookies from "js-cookie"
+import { useState } from "react"
 
 export default function AdminDashboardPage() {
   const router = useRouter()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-  const handleLogout = () => {
-    Cookies.remove("token")
-    Cookies.remove("adminLoggedIn")
-    router.push("/admin/login")
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true)
+      
+      // Clear all possible auth tokens/cookies
+      Cookies.remove("token")
+      Cookies.remove("adminLoggedIn")
+      Cookies.remove("admin_token")
+      localStorage.removeItem("token")
+      sessionStorage.clear()
+      
+      router.refresh()
+      router.push("/admin/login")
+    } catch (error) {
+      console.error("Logout error:", error)
+    } finally {
+      setIsLoggingOut(false)
     }
+  }
 
   return (
     <div className="container mx-auto px-4 pt-24 pb-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Button onClick={handleLogout} variant="destructive">
-          Logout
+        <Button 
+          onClick={handleLogout} 
+          variant="destructive"
+          disabled={isLoggingOut}
+        >
+          {isLoggingOut ? "Logging out..." : "Logout"}
         </Button>
       </div>
 
