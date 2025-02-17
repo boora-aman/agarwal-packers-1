@@ -64,7 +64,7 @@ export default function DownloadQuotation({ params }: { params: { id: string } }
   );
 
   return (
-    <div className="p-6">
+    <div className="container mx-auto px-4 pt-24 py-8">
       <h1 className="text-2xl font-bold mb-4">Download Quotation</h1>
       
       <div className="mb-4">

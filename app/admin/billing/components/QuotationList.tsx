@@ -13,8 +13,20 @@ import {
 } from "@/components/ui/table"
 import Cookies from "js-cookie"
 
-export default function QuotationList({ initialQuotations }) {
-  const [quotations, setQuotations] = useState(initialQuotations)
+interface Quotation {
+  _id: string
+  quotationNo: string
+  date: string
+  customerName: string
+  mobileNo: string
+  fromCity: string
+  toCity: string
+  vehicleType: string
+  totalAmount: number
+}
+
+export default function QuotationList({ initialQuotations }: { initialQuotations: Quotation[] }) {
+  const [quotations, setQuotations] = useState<Quotation[]>(initialQuotations)
   const router = useRouter()
 
   // Refresh quotations periodically
