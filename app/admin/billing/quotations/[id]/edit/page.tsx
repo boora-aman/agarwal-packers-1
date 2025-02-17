@@ -1,46 +1,72 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import Cookies from "js-cookie"
 
-interface QuotationCharges {
-  freightCharges: number
-  carTransportationCharges: number
-  loadingCharges: number
-  unloadingCharges: number
-  packingCharges: number
-  unpackingCharges: number
-  installationCharges: number
-  stationeryCharges: number
-  tollCharges: number
-  gstCharges: number
-  insuranceCharges: number
+const vehicleTypes = [
+  "Part Load",
+  "14-Foot",
+  "17-Foot",
+  "19-Foot",
+  "22-Foot",
+  "Custom"
+]
+
+const chargeLabels = {
+  freightCharges: "Freight Charges (Transportation)",
+  carTransportationCharges: "Car Transportation Charges",
+  packingCharges: "Packing Charges (Material + Labor)",
+  unpackingCharges: "Unpacking Charges (Labor)",
+  loadingCharges: "Loading Charges (Labor)",
+  unloadingCharges: "Unloading Charges (Labor)",
+  installationCharges: "Installation Charges (LEG, Gyser, AC etc.)",
+  stationeryCharges: "Stationery Charges",
+  tollCharges: "Toll & Highway Charges @ 7.00%",
+  gstCharges: "GST Charges & Service Charges @ 18%",
+  insuranceCharges: "Insurance Charges @ 3%"
 }
 
-interface Quotation {
-  _id: string
-  quotationNo: string
-  date: string
-  vehicleType: string
-  customerName: string
-  address: string
-  mobileNo: string
-  email?: string
-  fromCity: string
-  toCity: string
-  charges: QuotationCharges
-}
-
-export default function EditQuotationPage({ params }: { params: { id: string } }) {
+export default function EditQuotation({ params }: { params: { id: string } }) {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [quotation, setQuotation] = useState<Quotation | null>(null)
+  const [isCustomVehicle, setIsCustomVehicle] = useState(false)
+  const [formData, setFormData] = useState({
+    quotationNo: "",
+    date: "",
+    customerName: "",
+    address: "",
+    mobileNo: "",
+    email: "",
+    fromCity: "",
+    toCity: "",
+    vehicleType: "",
+    customVehicleType: "",
+    charges: {
+      freightCharges: "",
+      carTransportationCharges: "",
+      packingCharges: "",
+      unpackingCharges: "",
+      loadingCharges: "",
+      unloadingCharges: "",
+      installationCharges: "",
+      stationeryCharges: "",
+      tollCharges: "",
+      gstCharges: "",
+      insuranceCharges: ""
+    },
+    totalAmount: "0"
+  })
 
   useEffect(() => {
     fetchQuotation()
@@ -50,54 +76,44 @@ export default function EditQuotationPage({ params }: { params: { id: string } }
     try {
       const token = Cookies.get("token")
       const response = await fetch(`/api/quotations/${params.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` }
       })
       if (response.ok) {
         const data = await response.json()
-        setQuotation(data)
-      } else {
-        setError("Failed to fetch quotation")
+        setFormData({
+          ...data,
+          date: new Date(data.date).toISOString().split('T')[0],
+          customVehicleType: vehicleTypes.includes(data.vehicleType) ? "" : data.vehicleType
+        })
+        setIsCustomVehicle(!vehicleTypes.includes(data.vehicleType))
       }
-    } catch (err) {
-      console.error("Error fetching quotation:", err)
-      setError("An unexpected error occurred")
+    } catch (error) {
+      console.error("Error fetching quotation:", error)
     }
   }
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    try {
-      setLoading(true)
-      setError("")
-
-      const formData = new FormData(e.currentTarget)
-      const data = {
-        quotationNo: formData.get("quotationNo"),
-        date: formData.get("date"),
-        vehicleType: formData.get("vehicleType"),
-        customerName: formData.get("customerName"),
-        address: formData.get("address"),
-        mobileNo: formData.get("mobileNo"),
-        email: formData.get("email"),
-        fromCity: formData.get("fromCity"),
-        toCity: formData.get("toCity"),
-        charges: {
-          freightCharges: Number(formData.get("freightCharges")),
-          carTransportationCharges: Number(formData.get("carTransportationCharges")),
-          loadingCharges: Number(formData.get("loadingCharges")),
-          unloadingCharges: Number(formData.get("unloadingCharges")),
-          packingCharges: Number(formData.get("packingCharges")),
-          unpackingCharges: Number(formData.get("unpackingCharges")),
-          installationCharges: Number(formData.get("installationCharges")),
-          stationeryCharges: Number(formData.get("stationeryCharges")),
-          tollCharges: Number(formData.get("tollCharges")),
-          gstCharges: Number(formData.get("gstCharges")),
-          insuranceCharges: Number(formData.get("insuranceCharges"))
-        }
+  const handleChargeChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      charges: {
+        ...prev.charges,
+        [field]: value
       }
+    }))
+  }
 
+  const handleVehicleTypeChange = (value: string) => {
+    setIsCustomVehicle(value === "Custom")
+    setFormData(prev => ({
+      ...prev,
+      vehicleType: value === "Custom" ? prev.customVehicleType : value
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    try {
       const token = Cookies.get("token")
       const response = await fetch(`/api/quotations/${params.id}`, {
         method: "PUT",
@@ -105,176 +121,194 @@ export default function EditQuotationPage({ params }: { params: { id: string } }
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...formData,
+          vehicleType: isCustomVehicle ? formData.customVehicleType : formData.vehicleType
+        }),
       })
 
-      const result = await response.json()
-
-      if (result.success) {
+      if (response.ok) {
         router.push("/admin/billing/quotations")
-        router.refresh()
       } else {
-        setError(result.error || "Failed to update quotation")
+        const data = await response.json()
+        alert(data.error || "Failed to update quotation")
       }
-    } catch (err) {
-      console.error("Form submission error:", err)
-      setError("An unexpected error occurred")
-    } finally {
-      setLoading(false)
+    } catch (error) {
+      console.error("Error updating quotation:", error)
+      alert("Failed to update quotation")
     }
   }
 
-  if (!quotation) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-lg">Loading...</p>
-      </div>
-    )
-  }
-
-  const chargeFields = [
-    { key: "freightCharges", label: "Freight Charges" },
-    { key: "carTransportationCharges", label: "Car Transportation" },
-    { key: "loadingCharges", label: "Loading Charges" },
-    { key: "unloadingCharges", label: "Unloading Charges" },
-    { key: "packingCharges", label: "Packing Charges" },
-    { key: "unpackingCharges", label: "Unpacking Charges" },
-    { key: "installationCharges", label: "Installation Charges" },
-    { key: "stationeryCharges", label: "Stationery Charges" },
-    { key: "tollCharges", label: "Toll Charges (7%)" },
-    { key: "gstCharges", label: "GST Charges (18%)" },
-    { key: "insuranceCharges", label: "Insurance Charges (3%)" }
-  ]
-
   return (
-    <div className="container mx-auto px-4 pt-24 pb-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit Quotation #{quotation.quotationNo}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Edit Quotation</h1>
+      
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto">
+        <Card>
+          <CardContent className="pt-6">
+            {/* Basic Details */}
+            <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div className="space-y-2">
-                <Label htmlFor="quotationNo">Quotation No.</Label>
-                <Input 
-                  id="quotationNo" 
-                  name="quotationNo" 
-                  defaultValue={quotation.quotationNo}
-                  required 
+                <Label htmlFor="quotationNo">Quotation Number</Label>
+                <Input
+                  id="quotationNo"
+                  value={formData.quotationNo}
+                  onChange={e => setFormData(prev => ({ ...prev, quotationNo: e.target.value }))}
+                  required
+                  disabled
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
-                <Input 
-                  id="date" 
-                  name="date" 
-                  type="date" 
-                  defaultValue={quotation.date?.split("T")[0]}
-                  required 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="vehicleType">Vehicle Type</Label>
-                <Input 
-                  id="vehicleType" 
-                  name="vehicleType" 
-                  defaultValue={quotation.vehicleType}
-                  required 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="customerName">Customer Name</Label>
-                <Input 
-                  id="customerName" 
-                  name="customerName" 
-                  defaultValue={quotation.customerName}
-                  required 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input 
-                  id="address" 
-                  name="address" 
-                  defaultValue={quotation.address}
-                  required 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="mobileNo">Mobile No.</Label>
-                <Input 
-                  id="mobileNo" 
-                  name="mobileNo" 
-                  defaultValue={quotation.mobileNo}
-                  required 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  name="email" 
-                  type="email" 
-                  defaultValue={quotation.email}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="fromCity">From City</Label>
-                <Input 
-                  id="fromCity" 
-                  name="fromCity" 
-                  defaultValue={quotation.fromCity}
-                  required 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="toCity">To City</Label>
-                <Input 
-                  id="toCity" 
-                  name="toCity" 
-                  defaultValue={quotation.toCity}
-                  required 
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                  required
                 />
               </div>
             </div>
 
-            <div className="border-t pt-6">
-              <h3 className="font-semibold mb-4">Charges</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {chargeFields.map(({ key, label }) => (
+            {/* Customer Details */}
+            <div className="space-y-4 mb-6">
+              <h2 className="text-lg font-semibold">Customer Details</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="customerName">Customer Name</Label>
+                  <Input
+                    id="customerName"
+                    value={formData.customerName}
+                    onChange={e => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    value={formData.address}
+                    onChange={e => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="mobileNo">Mobile Number</Label>
+                  <Input
+                    id="mobileNo"
+                    value={formData.mobileNo}
+                    onChange={e => setFormData(prev => ({ ...prev, mobileNo: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Location & Vehicle Details */}
+            <div className="space-y-4 mb-6">
+              <h2 className="text-lg font-semibold">Location & Vehicle Details</h2>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fromCity">From City</Label>
+                  <Input
+                    id="fromCity"
+                    value={formData.fromCity}
+                    onChange={e => setFormData(prev => ({ ...prev, fromCity: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="toCity">To City</Label>
+                  <Input
+                    id="toCity"
+                    value={formData.toCity}
+                    onChange={e => setFormData(prev => ({ ...prev, toCity: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vehicleType">Vehicle Type</Label>
+                  <Select
+                    value={isCustomVehicle ? "Custom" : formData.vehicleType}
+                    onValueChange={handleVehicleTypeChange}
+                  >
+                    <SelectTrigger id="vehicleType">
+                      <SelectValue placeholder="Select Vehicle Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {vehicleTypes.map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {isCustomVehicle && (
+                    <Input
+                      className="mt-2"
+                      placeholder="Enter Custom Vehicle Type"
+                      value={formData.customVehicleType}
+                      onChange={e => setFormData(prev => ({ 
+                        ...prev, 
+                        customVehicleType: e.target.value,
+                        vehicleType: e.target.value 
+                      }))}
+                      required={isCustomVehicle}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Charges */}
+            <div className="space-y-4 mb-6">
+              <h2 className="text-lg font-semibold">Charges</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                {Object.entries(chargeLabels).map(([key, label]) => (
                   <div key={key} className="space-y-2">
                     <Label htmlFor={key}>{label}</Label>
                     <Input
                       id={key}
-                      name={key}
-                      type="number"
-                      defaultValue={quotation.charges[key as keyof QuotationCharges]}
-                      required
+                      value={formData.charges[key as keyof typeof formData.charges]}
+                      onChange={e => handleChargeChange(key, e.target.value)}
                     />
                   </div>
                 ))}
               </div>
             </div>
 
-            {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-
-            <div className="flex justify-end space-x-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push("/admin/billing/quotations")}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? "Updating..." : "Update Quotation"}
-              </Button>
+            {/* Total Amount */}
+            <div className="flex items-center space-x-4">
+              <Label htmlFor="totalAmount" className="font-semibold">Total Amount:</Label>
+              <Input
+                id="totalAmount"
+                value={formData.totalAmount}
+                onChange={e => setFormData(prev => ({ ...prev, totalAmount: e.target.value }))}
+                className="w-48"
+              />
             </div>
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <div className="flex gap-4">
+          <Button type="submit" className="flex-1">
+            Update Quotation
+          </Button>
+          <Button type="button" variant="outline" onClick={() => router.back()} className="flex-1">
+            Cancel
+          </Button>
+        </div>
+      </form>
     </div>
   )
 }
