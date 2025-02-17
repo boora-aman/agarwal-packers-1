@@ -9,12 +9,12 @@ async function getQuotations() {
     const cookieStore = cookies()
     const token = cookieStore.get("token")?.value
     
-    // Use absolute URL with the current host
     const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/quotations`, {
       headers: {
         Authorization: `Bearer ${token}`,
+        'Cache-Control': 'no-cache'
       },
-      cache: 'no-store'
+      next: { revalidate: 0 }
     })
     
     if (!response.ok) {
@@ -23,7 +23,7 @@ async function getQuotations() {
     }
     
     const data = await response.json()
-    console.log('Fetched quotations:', data) // Debug log
+    console.log('Server-side fetched quotations:', data) // Debug log
     return data
   } catch (error) {
     console.error("Error fetching quotations:", error)
@@ -32,7 +32,7 @@ async function getQuotations() {
 }
 
 export default async function QuotationsPage() {
-  const quotations = await getQuotations()
+  const initialQuotations = await getQuotations()
 
   return (
     <div className="container mx-auto px-4 pt-24 pb-8">
@@ -47,7 +47,7 @@ export default async function QuotationsPage() {
         </Button>
       </div>
 
-      <QuotationsList quotations={quotations} />
+      <QuotationsList initialQuotations={initialQuotations} />
     </div>
   )
 }

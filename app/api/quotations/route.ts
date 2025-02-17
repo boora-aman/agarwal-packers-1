@@ -24,10 +24,11 @@ export async function POST(req: Request) {
 
     // Connect to database
     await dbConnect();
+    console.log("Connected to DB:", process.env.MONGODB_URI); // Will be redacted in logs
 
     // Get request data
     const data = await req.json();
-    console.log("Received data:", JSON.stringify(data, null, 2));
+    console.log("Creating quotation:", data.quotationNo);
 
     // Convert charges to numbers with proper handling
     const charges = {
@@ -69,12 +70,9 @@ export async function POST(req: Request) {
 
     // Save to database
     const savedQuotation = await quotation.save();
-    console.log("Saved quotation:", JSON.stringify(savedQuotation, null, 2));
+    console.log("Saved quotation:", savedQuotation._id);
 
-    return NextResponse.json(
-      { success: true, quotation: savedQuotation },
-      { status: 201 }
-    );
+    return NextResponse.json(savedQuotation, { status: 201 });
   } catch (error: any) {
     console.error("Error creating quotation:", error);
 
@@ -108,24 +106,29 @@ export async function GET(req: Request) {
     // Verify authentication
     const token = req.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
+      console.log("No token provided");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const decodedToken = verifyToken(token);
     if (!decodedToken || 'error' in decodedToken) {
+      console.log("Invalid token:", decodedToken);
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
     // Connect to database
+    console.log("Connecting to DB...");
     await dbConnect();
+    console.log("Connected to DB");
 
     // Get all quotations, sorted by date descending
     const quotations = await Quotation.find({})
       .sort({ createdAt: -1 });
-
+    
+    console.log("Fetched quotations:", quotations.length);
     return NextResponse.json(quotations);
   } catch (error) {
-    console.error("Error fetching quotations:", error);
+    console.error("Error in GET /api/quotations:", error);
     return NextResponse.json(
       { error: "Failed to fetch quotations" },
       { status: 500 }

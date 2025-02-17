@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,9 +13,38 @@ import {
 } from "@/components/ui/table"
 import Cookies from "js-cookie"
 
-export default function QuotationList({ quotations: initialQuotations }) {
+export default function QuotationList({ initialQuotations }) {
   const [quotations, setQuotations] = useState(initialQuotations)
   const router = useRouter()
+
+  // Refresh quotations periodically
+  useEffect(() => {
+    const fetchQuotations = async () => {
+      try {
+        const token = Cookies.get("token")
+        const response = await fetch("/api/quotations", {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Cache-Control': 'no-cache'
+          }
+        })
+        if (response.ok) {
+          const data = await response.json()
+          console.log('Client-side fetched quotations:', data) // Debug log
+          setQuotations(data)
+        }
+      } catch (error) {
+        console.error("Error fetching quotations:", error)
+      }
+    }
+
+    // Initial fetch
+    fetchQuotations()
+
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchQuotations, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this quotation?")) return
