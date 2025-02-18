@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import Header from "@/components/header"
@@ -8,8 +8,9 @@ import type React from "react" // Import React
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Agarwal Packers and Movers Dehradun",
-  description: "Your trusted partner for all relocation services across India",
+  title: "Agrawal Packers and Movers - Professional Moving & Relocation Services",
+  description: "Trusted packers and movers in India offering comprehensive relocation services. Expert packing, moving, and storage solutions for homes and businesses.",
+  keywords: "packers and movers, relocation services, moving company, house shifting, office relocation, vehicle transportation"
 }
 
 export default function RootLayout({
