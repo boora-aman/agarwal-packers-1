@@ -50,6 +50,7 @@ export const branches: Branch[] = [
     city: "Delhi",
     address: "Plot No. 35, Ground Floor, Block A, Sector 16, Noida, Delhi NCR - 201301",
     phone: "+91 9368108590",
+    email: "info@agarwalpackersnmovers.in",
     timings: "Mon-Sat: 9:00 AM - 7:00 PM",
     mapLink: "https://maps.google.com/?q=Noida+Sector+16",
     keywords: [...commonKeywords, "packers and movers in Delhi", "NCR movers", "Noida relocation"],
