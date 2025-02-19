@@ -3,52 +3,52 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { generatePDF } from "@/utils/generatebill";
+import { generatePDF } from "@/utils/generatereceipt";
 import { Loader2 } from "lucide-react";
 import Cookies from "js-cookie";
 
-export default function DownloadBill({ params }: { params: { id: string } }) {
+export default function DownloadReceipt({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [bill, setBill] = useState<any>(null);
+  const [receipt, setReceipt] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
-    fetchBill();
+    fetchReceipt();
   }, [params.id]);
 
-  const fetchBill = async () => {
+  const fetchReceipt = async () => {
     try {
       const token = Cookies.get("token");
-      const response = await fetch(`/api/bills/${params.id}`, {
+      const response = await fetch(`/api/receipts/${params.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
         const data = await response.json();
-        setBill(data);
+        setReceipt(data);
       } else {
-        console.error("Failed to fetch bill");
+        console.error("Failed to fetch receipt");
       }
     } catch (err) {
-      console.error("Error fetching bill:", err);
+      console.error("Error fetching receipt:", err);
     }
   };
 
   const handleDownload = async () => {
-    if (!bill) {
-      alert("Bill data not available.");
+    if (!receipt) {
+      alert("Receipt data not available.");
       return;
     }
 
     setIsGenerating(true);
     try {
       // Fetch the template from public folder
-      const templateResponse = await fetch('/templates/bills-template.docx');
+      const templateResponse = await fetch('/templates/receipt-template.docx');
       const templateBlob = await templateResponse.blob();
-      const templateFile = new File([templateBlob], 'bills-template.docx', {
+      const templateFile = new File([templateBlob], 'receipt-template.docx', {
         type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       });
 
-      await generatePDF(bill, templateFile);
+      await generatePDF(receipt, templateFile);
     } catch (error) {
       console.error('Error generating document:', error);
       alert('Failed to generate document. Please try again.');
@@ -57,7 +57,7 @@ export default function DownloadBill({ params }: { params: { id: string } }) {
     }
   };
 
-  if (!bill) return (
+  if (!receipt) return (
     <div className="flex justify-center items-center min-h-screen">
       <Loader2 className="h-8 w-8 animate-spin" />
     </div>
@@ -65,11 +65,11 @@ export default function DownloadBill({ params }: { params: { id: string } }) {
 
   return (
     <div className="container mx-auto px-4 pt-24 py-8">
-      <h1 className="text-2xl font-bold mb-4">Download Bill</h1>
+      <h1 className="text-2xl font-bold mb-4">Download Money Receipt</h1>
       
       <div className="mb-4">
-        <p className="text-gray-600">Bill Number: {bill.billNo}</p>
-        <p className="text-gray-600">Customer: {bill.customerName}</p>
+        <p className="text-gray-600">Receipt Number: {receipt.mrNo}</p>
+        <p className="text-gray-600">Customer: {receipt.customerName}</p>
       </div>
       
       <Button 
