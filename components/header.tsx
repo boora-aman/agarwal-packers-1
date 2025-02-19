@@ -24,7 +24,7 @@ export default function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-primary">Agrawal Packers</span>
+            <span className="text-xl font-bold text-primary">Agrawal Packers & Movers India</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -42,7 +42,9 @@ export default function Header() {
             ))}
             <Button size="sm" className="gap-2">
               <Phone className="w-4 h-4" />
-              <span>Get Quote</span>
+              <Link href="/contact">
+                <span>Get Quote</span>
+              </Link>
             </Button>
           </nav>
 
@@ -71,7 +73,9 @@ export default function Header() {
             ))}
             <Button size="sm" className="gap-2">
               <Phone className="w-4 h-4" />
-              <span>Get Quote</span>
+              <Link href="tel:+919368108590">
+                <span>Get Quote</span>
+              </Link>
             </Button>
           </nav>
         </div>

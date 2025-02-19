@@ -11,6 +11,8 @@ export default function ContactPage() {
           inquiries about our services.
         </p>
 
+        <ContactSection />
+
         <div className="grid md:grid-cols-2 gap-12 mb-16">
           <div>
             <h2 className="text-2xl font-bold mb-6">Our Office</h2>
@@ -64,7 +66,6 @@ export default function ContactPage() {
           </div>
         </div>
 
-        <ContactSection />
       </div>
     </main>
   );

@@ -25,7 +25,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">Agarwal Packers and Movers</h3>
+            <h3 className="text-white text-lg font-semibold mb-4">Agrawal Packers and Movers India</h3>
             <p className="mb-4">Your trusted partner for all relocation needs across India.</p>
             <div className="flex space-x-4">
               {socialLinks.map((link) => (
@@ -105,7 +105,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
-          <p>&copy; {new Date().getFullYear()} Agarwal Packers and Movers. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Agrawal Packers and Movers India. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function BranchesPage() {
   return (
-    <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <div className="container mx-auto pt-24 px-4 py-16 sm:px-6 lg:px-8">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
           Our Nationwide Network
