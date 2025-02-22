@@ -9,6 +9,12 @@ function parseCharge(value: string | number | undefined): number {
   return isNaN(num) ? 0 : num;
 }
 
+interface QuotationDocument {
+  quotationNo: string;
+  _id: unknown;
+  __v: number;
+}
+
 export async function POST(req: Request) {
   try {
     // Verify authentication
@@ -38,11 +44,6 @@ export async function POST(req: Request) {
       unpackingCharges: parseCharge(data.charges?.unpackingCharges),
       loadingCharges: parseCharge(data.charges?.loadingCharges),
       unloadingCharges: parseCharge(data.charges?.unloadingCharges),
-      installationCharges: parseCharge(data.charges?.installationCharges),
-      stationeryCharges: parseCharge(data.charges?.stationeryCharges),
-      tollCharges: parseCharge(data.charges?.tollCharges),
-      gstCharges: parseCharge(data.charges?.gstCharges),
-      insuranceCharges: parseCharge(data.charges?.insuranceCharges)
     };
 
     // Calculate total
@@ -59,6 +60,15 @@ export async function POST(req: Request) {
       mobileNo: data.mobileNo,
       fromCity: data.fromCity,
       toCity: data.toCity,
+      installationCharges: data.installationCharges,
+      stationeryCharges: data.stationeryCharges,
+      tollCharges: data.tollCharges,
+      gstCharges: data.gstCharges,
+      insuranceCharges: data.insuranceCharges,
+      ClientGst: data.ClientGst,
+      companyName: data.companyName,
+      insPercentage: data.insPercentage,
+      gstPercentage: data.gstPercentage,
       charges,
       totalAmount: data.totalAmount || totalAmount // Use provided total or calculated
     };
@@ -117,9 +127,31 @@ export async function GET(req: Request) {
     }
 
     // Connect to database
-    console.log("Connecting to DB...");
     await dbConnect();
-    console.log("Connected to DB");
+
+    // Check if this is a request for the latest quotation number
+    const url = new URL(req.url);
+    if (url.searchParams.get('latest') === 'true') {
+      const latestQuotation = await Quotation.findOne({})
+        .sort({ quotationNo: -1 })
+        .select('quotationNo')
+        .lean() as QuotationDocument | null;
+      
+      let nextNumber;
+      if (!latestQuotation) {
+        nextNumber = 'Q0001';
+      } else {
+        // Extract number after 'Q' and increment
+        const lastNumber = parseInt(latestQuotation.quotationNo.substring(1));
+        const nextNum = isNaN(lastNumber) ? 1 : lastNumber + 1;
+        nextNumber = `Q${nextNum.toString().padStart(4, '0')}`;
+      }
+      
+      console.log('Last quotation:', latestQuotation?.quotationNo);
+      console.log('Next number:', nextNumber);
+      
+      return NextResponse.json({ latestQuotationNo: nextNumber });
+    }
 
     // Get all quotations, sorted by date descending
     const quotations = await Quotation.find({})

@@ -31,11 +31,6 @@ const chargeLabels = {
   unpackingCharges: "Unpacking Charges (Labor)",
   loadingCharges: "Loading Charges (Labor)",
   unloadingCharges: "Unloading Charges (Labor)",
-  installationCharges: "Installation Charges (LEG, Gyser, AC etc.)",
-  stationeryCharges: "Stationery Charges",
-  tollCharges: "Toll & Highway Charges @ 7.00%",
-  gstCharges: "GST Charges & Service Charges @ 18%",
-  insuranceCharges: "Insurance Charges @ 3%"
 }
 
 export default function EditQuotation({ params }: { params: { id: string } }) {
@@ -52,6 +47,15 @@ export default function EditQuotation({ params }: { params: { id: string } }) {
     toCity: "",
     vehicleType: "",
     customVehicleType: "",
+    installationCharges: "",
+    stationeryCharges: "",
+    tollCharges: "",
+    gstCharges: "",
+    insuranceCharges: "",
+    ClientGst: "",
+    companyName: "",
+    insPercentage: "",
+    gstPercentage: "",
     charges: {
       freightCharges: "",
       carTransportationCharges: "",
@@ -59,11 +63,6 @@ export default function EditQuotation({ params }: { params: { id: string } }) {
       unpackingCharges: "",
       loadingCharges: "",
       unloadingCharges: "",
-      installationCharges: "",
-      stationeryCharges: "",
-      tollCharges: "",
-      gstCharges: "",
-      insuranceCharges: ""
     },
     totalAmount: "0"
   })
@@ -193,6 +192,25 @@ export default function EditQuotation({ params }: { params: { id: string } }) {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="ClientGst">Client GST</Label>
+                  <Input
+                    id="ClientGst"
+                    placeholder="Enter Client GST"
+                    value={formData.ClientGst}
+                    onChange={e => setFormData(prev => ({ ...prev, ClientGst: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input
+                    id="companyName"
+                    placeholder="Enter Company Name"
+                    value={formData.companyName}
+                    onChange={e => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="mobileNo">Mobile Number</Label>
                   <Input
                     id="mobileNo"
@@ -273,20 +291,102 @@ export default function EditQuotation({ params }: { params: { id: string } }) {
             {/* Charges */}
             <div className="space-y-4 mb-6">
               <h2 className="text-lg font-semibold">Charges</h2>
+              
+              {/* Basic Charges */}
               <div className="grid md:grid-cols-2 gap-4">
                 {Object.entries(chargeLabels).map(([key, label]) => (
                   <div key={key} className="space-y-2">
                     <Label htmlFor={key}>{label}</Label>
                     <Input
                       id={key}
+                      placeholder="Enter numeric amount only"
                       value={formData.charges[key as keyof typeof formData.charges]}
                       onChange={e => handleChargeChange(key, e.target.value)}
                     />
                   </div>
                 ))}
               </div>
+
+              {/* Additional Charges */}
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="installationCharges">Installation Charges</Label>
+                  <Input
+                    id="installationCharges"
+                    placeholder="Enter Amount Or N/A"
+                    value={formData.installationCharges}
+                    onChange={e => setFormData(prev => ({ ...prev, installationCharges: e.target.value }))}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="stationeryCharges">Stationery Charges</Label>
+                  <Input
+                    id="stationeryCharges"
+                    placeholder="Enter Amount Or N/A"
+                    value={formData.stationeryCharges}
+                    onChange={e => setFormData(prev => ({ ...prev, stationeryCharges: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tollCharges">Toll Charges</Label>
+                  <Input
+                    id="tollCharges"
+                    placeholder="Enter Amount Or N/A"
+                    value={formData.tollCharges}
+                    onChange={e => setFormData(prev => ({ ...prev, tollCharges: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="gstCharges">GST Charges</Label>
+                  <Input
+                    id="gstCharges"
+                    placeholder="Enter Amount Or N/A"
+                    value={formData.gstCharges}
+                    onChange={e => setFormData(prev => ({ ...prev, gstCharges: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="insuranceCharges">Insurance Charges</Label>
+                  <Input
+                    id="insuranceCharges"
+                    placeholder="Enter Amount Or N/A"
+                    value={formData.insuranceCharges}
+                    onChange={e => setFormData(prev => ({ ...prev, insuranceCharges: e.target.value }))}
+                  />
+                </div>
+              </div>
             </div>
 
+            {/* Percentage */}
+            <div className="space-y-4 mb-6">
+              <h2 className="text-lg font-semibold">Percentage</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                  <Label htmlFor="insPercentage">Insurance Percentage</Label>
+                  <Input
+                    id="insPercentage"
+                    placeholder="Enter Insurance Percentage"
+                    value={formData.insPercentage}
+                    onChange={e => setFormData(prev => ({ ...prev, insPercentage: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="gstPercentage">GST Percentage</Label>
+                  <Input
+                    id="gstPercentage"
+                    placeholder="Enter GST Percentage"
+                    value={formData.gstPercentage}
+                    onChange={e => setFormData(prev => ({ ...prev, gstPercentage: e.target.value }))}
+                  />
+                </div>
+                
+              </div>
+            </div>
             {/* Total Amount */}
             <div className="flex items-center space-x-4">
               <Label htmlFor="totalAmount" className="font-semibold">Total Amount:</Label>

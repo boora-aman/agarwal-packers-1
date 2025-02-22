@@ -31,12 +31,8 @@ const chargeLabels = {
   unpackingCharges: "Unpacking Charges (Labor)",
   loadingCharges: "Loading Charges (Labor)",
   unloadingCharges: "Unloading Charges (Labor)",
-  installationCharges: "Installation Charges (LEG, Gyser, AC etc.)",
-  stationeryCharges: "Stationery Charges",
-  tollCharges: "Toll & Highway Charges @ 7.00%",
-  gstCharges: "GST Charges & Service Charges @ 18%",
-  insuranceCharges: "Insurance Charges @ 3%"
 }
+
 
 export default function CreateQuotation() {
   const router = useRouter()
@@ -51,6 +47,15 @@ export default function CreateQuotation() {
     toCity: "",
     vehicleType: "",
     customVehicleType: "",
+    installationCharges: "N/A",
+    stationeryCharges: "U/B",
+    tollCharges: "N/A",
+    gstCharges: "Extra",
+    insuranceCharges: "Extra",
+    ClientGst: "N/A",
+    companyName: "N/A",
+    insPercentage: "3",
+    gstPercentage: "18",
     charges: {
       freightCharges: "",
       carTransportationCharges: "",
@@ -58,16 +63,34 @@ export default function CreateQuotation() {
       unpackingCharges: "",
       loadingCharges: "",
       unloadingCharges: "",
-      installationCharges: "",
-      stationeryCharges: "",
-      tollCharges: "",
-      gstCharges: "",
-      insuranceCharges: ""
     },
     totalAmount: "0"
   })
 
   const [isCustomVehicle, setIsCustomVehicle] = useState(false)
+
+  // Fetch the latest quotation number when component mounts
+  useEffect(() => {
+    const fetchLatestQuotationNo = async () => {
+      try {
+        const token = Cookies.get("token");
+        const response = await fetch("/api/quotations?latest=true", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setFormData(prev => ({ ...prev, quotationNo: data.latestQuotationNo }));
+        }
+      } catch (error) {
+        console.error("Error fetching latest quotation number:", error);
+      }
+    };
+
+    fetchLatestQuotationNo();
+  }, []);
 
   // Calculate total whenever charges change
   useEffect(() => {
@@ -147,6 +170,7 @@ export default function CreateQuotation() {
                   value={formData.quotationNo}
                   onChange={e => setFormData(prev => ({ ...prev, quotationNo: e.target.value }))}
                   required
+                  className="bg-gray-100"
                 />
               </div>
               <div className="space-y-2">
@@ -183,6 +207,25 @@ export default function CreateQuotation() {
                     value={formData.address}
                     onChange={e => setFormData(prev => ({ ...prev, address: e.target.value }))}
                     required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ClientGst">Client GST</Label>
+                  <Input
+                    id="ClientGst"
+                    placeholder="Enter Client GST"
+                    value={formData.ClientGst}
+                    onChange={e => setFormData(prev => ({ ...prev, ClientGst: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input
+                    id="companyName"
+                    placeholder="Enter Company Name"
+                    value={formData.companyName}
+                    onChange={e => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
@@ -270,18 +313,100 @@ export default function CreateQuotation() {
             {/* Charges */}
             <div className="space-y-4 mb-6">
               <h2 className="text-lg font-semibold">Charges</h2>
+              
+              {/* Basic Charges */}
               <div className="grid md:grid-cols-2 gap-4">
                 {Object.entries(chargeLabels).map(([key, label]) => (
                   <div key={key} className="space-y-2">
                     <Label htmlFor={key}>{label}</Label>
                     <Input
                       id={key}
-                      placeholder="Enter amount or N/A"
+                      placeholder="Enter numeric amount only"
                       value={formData.charges[key as keyof typeof formData.charges]}
                       onChange={e => handleChargeChange(key, e.target.value)}
                     />
                   </div>
                 ))}
+              </div>
+
+              {/* Additional Charges */}
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="installationCharges">Installation Charges</Label>
+                  <Input
+                    id="installationCharges"
+                    placeholder="Enter Amount Or N/A"
+                    value={formData.installationCharges}
+                    onChange={e => setFormData(prev => ({ ...prev, installationCharges: e.target.value }))}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="stationeryCharges">Stationery Charges</Label>
+                  <Input
+                    id="stationeryCharges"
+                    placeholder="Enter Amount Or N/A"
+                    value={formData.stationeryCharges}
+                    onChange={e => setFormData(prev => ({ ...prev, stationeryCharges: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tollCharges">Toll Charges</Label>
+                  <Input
+                    id="tollCharges"
+                    placeholder="Enter Amount Or N/A"
+                    value={formData.tollCharges}
+                    onChange={e => setFormData(prev => ({ ...prev, tollCharges: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="gstCharges">GST Charges</Label>
+                  <Input
+                    id="gstCharges"
+                    placeholder="Enter Amount Or N/A"
+                    value={formData.gstCharges}
+                    onChange={e => setFormData(prev => ({ ...prev, gstCharges: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="insuranceCharges">Insurance Charges</Label>
+                  <Input
+                    id="insuranceCharges"
+                    placeholder="Enter Amount Or N/A"
+                    value={formData.insuranceCharges}
+                    onChange={e => setFormData(prev => ({ ...prev, insuranceCharges: e.target.value }))}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Percentage */}
+            <div className="space-y-4 mb-6">
+              <h2 className="text-lg font-semibold">Percentage</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                  <Label htmlFor="insPercentage">Insurance Percentage</Label>
+                  <Input
+                    id="insPercentage"
+                    placeholder="Enter Insurance Percentage"
+                    value={formData.insPercentage}
+                    onChange={e => setFormData(prev => ({ ...prev, insPercentage: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="gstPercentage">GST Percentage</Label>
+                  <Input
+                    id="gstPercentage"
+                    placeholder="Enter GST Percentage"
+                    value={formData.gstPercentage}
+                    onChange={e => setFormData(prev => ({ ...prev, gstPercentage: e.target.value }))}
+                  />
+                </div>
+                
               </div>
             </div>
 

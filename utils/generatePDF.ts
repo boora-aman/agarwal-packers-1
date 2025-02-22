@@ -27,17 +27,21 @@ export async function generatePDF(quotationData: any, wordFile: File) {
       fromCity: quotationData.fromCity || '',
       toCity: quotationData.toCity || '',
       vehicleType: quotationData.vehicleType || '',
+      companyName: quotationData.companyName || '',
+      ClientGst: quotationData.ClientGst || '',
+      insPercentage: quotationData.insPercentage || '',
+      gstPercentage: quotationData.gstPercentage || '',
+      installationCharges: quotationData.installationCharges || '',
+      stationeryCharges: quotationData.stationeryCharges || '',
+      tollCharges: quotationData.tollCharges || '',
+      gstCharges: quotationData.gstCharges || '',
+      insuranceCharges: quotationData.insuranceCharges || '',
       freightCharges: quotationData.charges?.freightCharges?.toString() || '0',
       carTransportationCharges: quotationData.charges?.carTransportationCharges?.toString() || '0',
       packingCharges: quotationData.charges?.packingCharges?.toString() || '0',
       unpackingCharges: quotationData.charges?.unpackingCharges?.toString() || '0',
       loadingCharges: quotationData.charges?.loadingCharges?.toString() || '0',
       unloadingCharges: quotationData.charges?.unloadingCharges?.toString() || '0',
-      installationCharges: quotationData.charges?.installationCharges?.toString() || '0',
-      stationeryCharges: quotationData.charges?.stationeryCharges?.toString() || 'U/B',
-      tollCharges: quotationData.charges?.tollCharges?.toString() || 'N/A',
-      gstCharges: quotationData.charges?.gstCharges?.toString() || 'Extra',
-      insuranceCharges: quotationData.charges?.insuranceCharges?.toString() || 'Extra',
       totalAmount: quotationData.totalAmount || calculateTotal(quotationData.charges),
     };
 
@@ -86,11 +90,6 @@ function calculateTotal(charges: any) {
     'unpackingCharges',
     'loadingCharges',
     'unloadingCharges',
-    'installationCharges',
-    'stationeryCharges',
-    'tollCharges',
-    'gstCharges',
-    'insuranceCharges'
   ];
 
   return chargeTypes

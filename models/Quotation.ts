@@ -7,11 +7,6 @@ const ChargesSchema = new mongoose.Schema({
   unpackingCharges: { type: Number, default: 0 },
   loadingCharges: { type: Number, default: 0 },
   unloadingCharges: { type: Number, default: 0 },
-  installationCharges: { type: Number, default: 0 },
-  stationeryCharges: { type: Number, default: 0 },
-  tollCharges: { type: Number, default: 0 },
-  gstCharges: { type: Number, default: 0 },
-  insuranceCharges: { type: Number, default: 0 }
 }, { _id: false })
 
 const QuotationSchema = new mongoose.Schema({
@@ -44,6 +39,7 @@ const QuotationSchema = new mongoose.Schema({
   email: {
     type: String,
     trim: true,
+    required: [false, "Email is required"],
     default: ""
   },
   mobileNo: {
@@ -61,6 +57,51 @@ const QuotationSchema = new mongoose.Schema({
     required: [true, "Destination city is required"],
     trim: true
   },
+  installationCharges: {
+    type: String,
+    required: [false, "Installation charges are required"],
+    default: "N/A"
+  },
+  stationeryCharges: {
+    type: String,
+    required: [false, "Stationery charges are required"],
+    default: "U/B"
+  },
+  tollCharges: {
+    type: String,
+    required: [false, "Toll charges are required"],
+    default: "N/A"
+  },
+  gstCharges: {
+    type: String,
+    required: [false, "GST charges are required"],
+    default: "Extra"
+  },
+  insuranceCharges: {
+    type: String,
+    required: [false, "Insurance charges are required"],
+    default: "Extra"
+  },
+  ClientGst: {
+    type: String,
+    required: [false, "Client GST is required"],
+    default: "N/A"
+  },
+  companyName: {
+    type: String,
+    required: [false, "Company name is required"],
+    default: "N/A"
+  },
+  insPercentage: {
+    type: String,
+    required: [false, "Insurance percentage is required"],
+    default: "3"
+  },
+  gstPercentage: {
+    type: String,
+    required: [false, "GST percentage is required"],
+    default: "18"
+  },
   charges: {
     type: ChargesSchema,
     default: () => ({
@@ -70,11 +111,6 @@ const QuotationSchema = new mongoose.Schema({
       unpackingCharges: 0,
       loadingCharges: 0,
       unloadingCharges: 0,
-      installationCharges: 0,
-      stationeryCharges: 0,
-      tollCharges: 0,
-      gstCharges: 0,
-      insuranceCharges: 0
     })
   },
   totalAmount: {
