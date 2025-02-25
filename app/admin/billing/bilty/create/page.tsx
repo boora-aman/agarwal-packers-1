@@ -69,6 +69,27 @@ export default function CreateBilty() {
     },
     totalAmount: "0"
   })
+  useEffect(() => {
+    const fetchLatestBiltyNo = async () => {
+      try {
+        const token = Cookies.get("token");
+        const response = await fetch("/api/bilty?latest=true", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setFormData(prev => ({ ...prev, biltyNo: data.latestBiltyNo }));
+        }
+      } catch (error) {
+        console.error("Error fetching latest quotation number:", error);
+      }
+    };
+
+    fetchLatestBiltyNo();
+  }, []);
 
 
   // Calculate total whenever charges change

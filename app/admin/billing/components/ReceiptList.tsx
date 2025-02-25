@@ -17,9 +17,6 @@ interface Receipt {
   billNo: string
   NoPackage: string
   datebook: string
-  cash: number
-  cheque: number
-  account: number
   rupeestext: string
   totalamount: number
 }
@@ -117,11 +114,6 @@ export default function ReceiptList({ initialReceipts }: { initialReceipts: Rece
                 <div className="flex justify-between">
                   <div>From: {receipt.fromCity}</div>
                   <div>{formatDate(receipt.date)}</div>
-                </div>
-                <div className="mt-2 grid grid-cols-3 gap-2 text-gray-600">
-                  <div>Cash: ₹{receipt.cash}</div>
-                  <div>Cheque: ₹{receipt.cheque}</div>
-                  <div>Account: ₹{receipt.account}</div>
                 </div>
                 <div className="mt-2 font-medium">Total: ₹{receipt.totalamount}</div>
               </div>

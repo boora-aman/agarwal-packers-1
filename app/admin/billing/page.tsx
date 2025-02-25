@@ -23,9 +23,9 @@ export default function BillingPage() {
     },
     {
       title: "LR",
-      description: "Manage Lorry Receipts",
+      description: "Manage Lorry/Bilty Receipts",
       icon: FileCheck,
-      href: "/admin/billing/lr",
+      href: "/admin/billing/bilty",
     },
     {
       title: "Money Receipt",

@@ -118,7 +118,11 @@ export async function POST(req: Request) {
     )
   }
 }
-
+interface BiltyDocument {
+  biltyNo: string;
+  _id: unknown;
+  __v: number;
+}
 export async function GET(req: Request) {
   try {
     const token = req.headers.get("Authorization")?.split(" ")[1]
@@ -132,6 +136,28 @@ export async function GET(req: Request) {
     }
 
     await dbConnect()
+    const url = new URL(req.url);
+    if (url.searchParams.get('latest') === 'true') {
+      const latestBilty = await Bilty.findOne({})
+        .sort({ biltyNo: -1 })
+        .select('biltyNo')
+        .lean() as BiltyDocument | null;
+      
+      let nextNumber;
+      if (!latestBilty) {
+        nextNumber = 'B0001';
+      } else {
+        // Extract number after 'B' and increment
+        const lastNumber = parseInt(latestBilty.biltyNo.substring(1));
+        const nextNum = isNaN(lastNumber) ? 1 : lastNumber + 1;
+        nextNumber = `B${nextNum.toString().padStart(4, '0')}`;
+      }
+      
+      console.log('Last bilty:', latestBilty?.biltyNo);
+      console.log('Next number:', nextNumber);
+      
+      return NextResponse.json({ latestBiltyNo: nextNumber });
+    }
     const bilties = await Bilty.find({}).sort({ createdAt: -1 })
     
     return NextResponse.json(bilties)

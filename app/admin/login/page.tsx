@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
           // Store token and set admin cookie
           Cookies.set("token", data.token, { path: "/" })
           Cookies.set("adminLoggedIn", "true", { path: "/" })
-          router.push("/admin")
+          router.push("/admin/dashboard")
         } else {
           setError("You do not have admin privileges")
         }

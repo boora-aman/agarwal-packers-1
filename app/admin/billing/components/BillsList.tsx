@@ -15,12 +15,9 @@ interface Bill {
   mobileNo: string
   fromCity: string
   toCity: string
-  weight: string
-  distance: string
   ClientGst: string
   StateCode: string
   biltyNo: string
-  NoPackage: string
   insPercentage: number
   insValue: number
   GstPercentage: number
@@ -120,10 +117,6 @@ export default function BillsList({ initialBills }: { initialBills: Bill[] }) {
                 <div className="flex justify-between">
                   <div>{bill.fromCity} - {bill.toCity}</div>
                   <div>{formatDate(bill.date)}</div>
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-2 text-gray-600">
-                  <div>Weight: {bill.weight}</div>
-                  <div>Packages: {bill.NoPackage}</div>
                 </div>
                 <div className="mt-2 font-medium">Total: ₹{bill.totalAmount}</div>
               </div>

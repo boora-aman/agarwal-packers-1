@@ -95,7 +95,7 @@ export default function BiltyList({ initialBilty }: { initialBilty: Bilty[] }) {
       {/* Mobile view cards */}
       <div className="grid gap-4">
         {bilty.map((bilty) => (
-          <Card key={bilty._id} className="border border-gray-200">
+          <Card key={bilty._id} className="border border-gray-400">
             <CardContent className="p-0">
               {/* Header - Like the red card in image 3 */}
               <div className="bg-red-500 text-white p-3 flex justify-between items-center rounded-t-lg">
