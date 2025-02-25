@@ -243,10 +243,15 @@ export default function ConsignmentPage() {
 
   return (
     <div className="container mx-auto px-4 pt-24 pb-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Consignment Management</h1>
-        <Button onClick={() => router.push("/admin/dashboard")}>Back to Dashboard</Button>
-      </div>
+  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+    <h1 className="text-3xl font-bold">Consignment Management</h1>
+    <Button 
+      onClick={() => router.push("/admin/dashboard")}
+      className="w-full sm:w-auto"
+    >
+      Back to Dashboard
+    </Button>
+  </div>
 
       <Card className="mb-8">
         <CardHeader>

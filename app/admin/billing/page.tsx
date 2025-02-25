@@ -37,14 +37,16 @@ export default function BillingPage() {
 
   return (
 
-      <div className="container mx-auto px-4 pt-24 pb-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Billing Management</h1>
-          <p className="text-muted-foreground mt-1">Create and manage all your billing documents</p>
-        </div>
-        <Button onClick={() => router.push("/admin/dashboard")}>Back to Dashboard</Button>
-      </div>
+    <div className="container mx-auto px-4 pt-24 pb-8">
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+      <h1 className="text-3xl font-bold">Billing Management</h1>
+      <Button 
+        onClick={() => router.push("/admin/dashboard")}
+        className="w-full sm:w-auto"
+      >
+        Back to Dashboard
+      </Button>
+    </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {documents.map((doc) => (

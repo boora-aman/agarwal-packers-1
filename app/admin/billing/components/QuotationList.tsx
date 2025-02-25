@@ -3,15 +3,9 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Card, CardContent } from "@/components/ui/card"
 import Cookies from "js-cookie"
+import { Pencil, Download, Trash2, Car } from "lucide-react"
 
 interface Quotation {
   _id: string
@@ -80,60 +74,55 @@ export default function QuotationList({ initialQuotations }: { initialQuotations
     router.push(`/admin/billing/quotations/${quotationId}/edit`)
   }
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString()
+  }
+
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Quotation No</TableHead>
-          <TableHead>Date</TableHead>
-          <TableHead>Customer Name</TableHead>
-          <TableHead>Mobile</TableHead>
-          <TableHead>From</TableHead>
-          <TableHead>To</TableHead>
-          <TableHead>Vehicle Type</TableHead>
-          <TableHead>Total Amount</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <div className="space-y-4">
+
+      {/* Mobile view cards */}
+      <div className="grid gap-4">
         {quotations.map((quotation) => (
-          <TableRow key={quotation._id}>
-            <TableCell>{quotation.quotationNo}</TableCell>
-            <TableCell>{new Date(quotation.date).toLocaleDateString()}</TableCell>
-            <TableCell>{quotation.customerName}</TableCell>
-            <TableCell>{quotation.mobileNo}</TableCell>
-            <TableCell>{quotation.fromCity}</TableCell>
-            <TableCell>{quotation.toCity}</TableCell>
-            <TableCell>{quotation.vehicleType}</TableCell>
-            <TableCell>₹{quotation.totalAmount}</TableCell>
-            <TableCell>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEdit(quotation._id)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push(`/admin/billing/quotations/${quotation._id}/download`)}
-                >
-                  Download
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDelete(quotation._id)}
-                >
-                  Delete
-                </Button>
+          <Card key={quotation._id} className="border border-gray-200">
+            <CardContent className="p-0">
+              {/* Header - Like the red card in image 3 */}
+              <div className="bg-orange-400 text-white p-3 flex justify-between items-center rounded-t-lg">
+                <h3 className="font-medium">#{quotation.quotationNo} {quotation.customerName}</h3>
+                <div className="flex space-x-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-red-600" onClick={() => handleEdit(quotation._id)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-red-600" onClick={() => router.push(`/admin/billing/quotations/${quotation._id}/download`)}>
+                    <Download className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-red-600" onClick={() => handleDelete(quotation._id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </TableCell>
-          </TableRow>
+
+              {/* Transport details with vehicle icon */}
+              <div className="p-3 flex items-center border-b">
+                <Car className="h-5 w-5 mr-2 text-gray-500" />
+                <span className="font-medium">{quotation.vehicleType}</span>
+                <div className="ml-auto text-sm text-gray-500">{quotation.mobileNo}</div>
+              </div>
+
+              {/* Transport route details */}
+              <div className="p-3 text-sm">
+                <div className="flex justify-between">
+                  <div>{quotation.fromCity} - {quotation.toCity}</div>
+                  <div>{formatDate(quotation.date)}</div>
+                </div>
+                {quotation.totalAmount > 0 && (
+                  <div className="mt-1 font-medium">₹{quotation.totalAmount}</div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         ))}
-      </TableBody>
-    </Table>
+      </div>
+    </div>
   )
-} 
+}

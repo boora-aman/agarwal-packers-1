@@ -42,10 +42,10 @@ export default function CreateQuotation() {
     customerName: "",
     address: "",
     mobileNo: "",
-    email: "",
+    email: "null@gmail.com",
     fromCity: "",
     toCity: "",
-    vehicleType: "",
+    vehicleType: "Part Load",
     customVehicleType: "",
     installationCharges: "N/A",
     stationeryCharges: "U/B",
@@ -170,7 +170,7 @@ export default function CreateQuotation() {
                   value={formData.quotationNo}
                   onChange={e => setFormData(prev => ({ ...prev, quotationNo: e.target.value }))}
                   required
-                  className="bg-gray-100"
+                  className="bg-blue-300"
                 />
               </div>
               <div className="space-y-2">

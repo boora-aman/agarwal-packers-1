@@ -3,15 +3,9 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Card, CardContent } from "@/components/ui/card"
 import Cookies from "js-cookie"
+import { Pencil, Download, Trash2, FileText } from "lucide-react"
 
 interface Bill {
   _id: string
@@ -88,58 +82,55 @@ export default function BillsList({ initialBills }: { initialBills: Bill[] }) {
     router.push(`/admin/billing/bills/${billId}/edit`)
   }
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString()
+  }
+
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Bill No</TableHead>
-          <TableHead>Date</TableHead>
-          <TableHead>Customer Name</TableHead>
-          <TableHead>Mobile</TableHead>
-          <TableHead>From</TableHead>
-          <TableHead>To</TableHead>
-          <TableHead>Total Amount</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <div className="space-y-4">
+      <div className="grid gap-4">
         {bills.map((bill) => (
-          <TableRow key={bill._id}>
-            <TableCell>{bill.billNo}</TableCell>
-            <TableCell>{new Date(bill.date).toLocaleDateString()}</TableCell>
-            <TableCell>{bill.customerName}</TableCell>
-            <TableCell>{bill.mobileNo}</TableCell>
-            <TableCell>{bill.fromCity}</TableCell>
-            <TableCell>{bill.toCity}</TableCell>
-            <TableCell>₹{bill.totalAmount}</TableCell>
-            <TableCell>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEdit(bill._id)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push(`/admin/billing/bills/${bill._id}/download`)}
-                >
-                  Download
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDelete(bill._id)}
-                >
-                  Delete
-                </Button>
+          <Card key={bill._id} className="border border-gray-200">
+            <CardContent className="p-0">
+              {/* Header */}
+              <div className="bg-green-500 text-white p-3 flex justify-between items-center rounded-t-lg">
+                <h3 className="font-medium">#{bill.billNo} {bill.customerName}</h3>
+                <div className="flex space-x-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-green-600" onClick={() => handleEdit(bill._id)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-green-600" onClick={() => router.push(`/admin/billing/bills/${bill._id}/download`)}>
+                    <Download className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-green-600" onClick={() => handleDelete(bill._id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </TableCell>
-          </TableRow>
+
+              {/* Bill details with icon */}
+              <div className="p-3 flex items-center border-b">
+                <FileText className="h-5 w-5 mr-2 text-gray-500" />
+                <span className="font-medium">GST: {bill.ClientGst}</span>
+                <div className="ml-auto text-sm text-gray-500">{bill.mobileNo}</div>
+              </div>
+
+              {/* Transport details */}
+              <div className="p-3 text-sm">
+                <div className="flex justify-between">
+                  <div>{bill.fromCity} - {bill.toCity}</div>
+                  <div>{formatDate(bill.date)}</div>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2 text-gray-600">
+                  <div>Weight: {bill.weight}</div>
+                  <div>Packages: {bill.NoPackage}</div>
+                </div>
+                <div className="mt-2 font-medium">Total: ₹{bill.totalAmount}</div>
+              </div>
+            </CardContent>
+          </Card>
         ))}
-      </TableBody>
-    </Table>
+      </div>
+    </div>
   )
 } 
