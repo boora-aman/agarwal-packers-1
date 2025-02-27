@@ -128,18 +128,43 @@ export async function GET(req: Request) {
     console.log("Connecting to DB...");
     await dbConnect();
     console.log("Connected to DB");
-
-    // Get all bills, sorted by date descending
-    const bills = await Bills.find({})
-      .sort({ createdAt: -1 });
+    const url = new URL(req.url);
+    if (url.searchParams.get('latest') === 'true') {
+      const latestBill = await Bills.findOne({})
+        .sort({ billNo: -1 })
+        .select('billNo')
+        .lean() as BillsDocument | null;
+      
+      let nextNumber;
+      if (!latestBill) {
+        nextNumber = 'BL8000';
+      } else {
+        // Extract number after 'B' and increment
+        const lastNumber = parseInt(latestBill.billNo.substring(2));
+        const nextNum = isNaN(lastNumber) ? 1 : lastNumber + 1;
+        nextNumber = `BL${nextNum.toString().padStart(4, '0')}`;
+      }
+      
+      console.log('Last bill:', latestBill?.billNo);
+      console.log('Next number:', nextNumber);
+      
+      return NextResponse.json({ latestBillNo: nextNumber });
+    }
+    const bills = await Bills.find({}).sort({ createdAt: -1 })
     
-    console.log("Fetched bills:", bills.length);
-    return NextResponse.json(bills);
+    return NextResponse.json(bills)
   } catch (error) {
-    console.error("Error in GET /api/bills:", error);
+    console.error("Error fetching bills:", error)
     return NextResponse.json(
       { error: "Failed to fetch bills" },
       { status: 500 }
-    );
+    )
   }
-} 
+}
+
+interface BillsDocument {
+billNo: string;
+_id: string;
+__v: number;
+}
+

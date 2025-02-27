@@ -120,9 +120,10 @@ export async function POST(req: Request) {
 }
 interface BiltyDocument {
   biltyNo: string;
-  _id: unknown;
+  _id: string;
   __v: number;
 }
+
 export async function GET(req: Request) {
   try {
     const token = req.headers.get("Authorization")?.split(" ")[1]
@@ -145,12 +146,12 @@ export async function GET(req: Request) {
       
       let nextNumber;
       if (!latestBilty) {
-        nextNumber = 'B0001';
+        nextNumber = 'LR8000';
       } else {
         // Extract number after 'B' and increment
-        const lastNumber = parseInt(latestBilty.biltyNo.substring(1));
+        const lastNumber = parseInt(latestBilty.biltyNo.substring(2));
         const nextNum = isNaN(lastNumber) ? 1 : lastNumber + 1;
-        nextNumber = `B${nextNum.toString().padStart(4, '0')}`;
+        nextNumber = `LR${nextNum.toString().padStart(4, '0')}`;
       }
       
       console.log('Last bilty:', latestBilty?.biltyNo);

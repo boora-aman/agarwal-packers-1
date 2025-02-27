@@ -11,7 +11,7 @@ const ChargesSchema = new mongoose.Schema({
 }, { _id: false })
 
 const ReceiptSchema = new mongoose.Schema({
-    mrNo: { type: Number, required: true, unique: true },
+    mrNo: { type: String, required: true, unique: true },
     date: { type: Date, required: true, default: Date.now },
     customerName: { type: String, required: true },
     fromCity: { type: String, required: true },

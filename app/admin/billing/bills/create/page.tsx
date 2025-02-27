@@ -65,6 +65,28 @@ export default function CreateQuotation() {
     },
     totalAmount: "0"
   })
+  useEffect(() => {
+    const fetchLatestBillNo = async () => {
+      try {
+        const token = Cookies.get("token");
+        const response = await fetch("/api/bills?latest=true", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setFormData(prev => ({ ...prev, billNo: data.latestBillNo }));
+        }
+      } catch (error) {
+        console.error("Error fetching latest bill number:", error);
+      }
+    };
+
+    fetchLatestBillNo();
+  }, []);
+
 
 
   // Calculate total whenever charges change

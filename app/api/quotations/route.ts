@@ -139,12 +139,12 @@ export async function GET(req: Request) {
       
       let nextNumber;
       if (!latestQuotation) {
-        nextNumber = 'Q0001';
+        nextNumber = 'QT8000';
       } else {
         // Extract number after 'Q' and increment
-        const lastNumber = parseInt(latestQuotation.quotationNo.substring(1));
+        const lastNumber = parseInt(latestQuotation.quotationNo.substring(2));
         const nextNum = isNaN(lastNumber) ? 1 : lastNumber + 1;
-        nextNumber = `Q${nextNum.toString().padStart(4, '0')}`;
+        nextNumber = `QT${nextNum.toString().padStart(4, '0')}`;
       }
       
       console.log('Last quotation:', latestQuotation?.quotationNo);
