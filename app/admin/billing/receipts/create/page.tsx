@@ -52,6 +52,27 @@ export default function CreateReceipt() {
     },
     totalamount: "0"
   })
+  useEffect(() => {
+    const fetchLatestmrNo = async () => {
+      try {
+        const token = Cookies.get("token");
+        const response = await fetch("/api/receipts?latest=true", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setFormData(prev => ({ ...prev, mrNo: data.latestmrNo }));
+        }
+      } catch (error) {
+        console.error("Error fetching latest receipt number:", error);
+      }
+    };
+
+    fetchLatestmrNo();
+  }, []);
 
 
   // Calculate total whenever charges change

@@ -17,6 +17,15 @@ export async function generatePDF(receiptData: any, wordFile: File) {
         })
       : '';
 
+    // Format datebook properly
+    const formattedDatebook = receiptData.datebook 
+      ? new Date(receiptData.datebook.$date || receiptData.datebook).toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        })
+      : '';
+
     // Create replacements object
     const replacements = {
       mrNo: receiptData.mrNo || '',
@@ -26,7 +35,7 @@ export async function generatePDF(receiptData: any, wordFile: File) {
       biltyNo: receiptData.biltyNo || '',
       billNo: receiptData.billNo || '',
       NoPackage: receiptData.NoPackage || '',
-      datebook: receiptData.datebook || '',
+      datebook: formattedDatebook || '',
       Cash: receiptData.cash || '',
       Cheque: receiptData.cheque || '',
       Account: receiptData.account || '',
@@ -39,8 +48,8 @@ export async function generatePDF(receiptData: any, wordFile: File) {
             ignoreZeroCurrency: false,
           }
         });
-        const amount = parseFloat(receiptData.TotalAmount) || 0;
-        return toWords.convert(amount, { currency: true }) || '';
+        const amount = parseFloat(receiptData.totalamount) || 0;
+        return toWords.convert(Math.round(amount), { currency: true }) || '';
       })(),
       freight: receiptData.charges?.freight.toString() || '',
       carTransport: receiptData.charges?.carTransport.toString() || '',
@@ -49,7 +58,7 @@ export async function generatePDF(receiptData: any, wordFile: File) {
       GstCharges: receiptData.charges?.GstCharges.toString() || '',
       StCharges: receiptData.charges?.StCharges.toString() || '',
       InsCharges: receiptData.charges?.insCharges.toString() || '',
-      TotalAmount: receiptData.totalAmount || calculateTotal(receiptData.charges),
+      TotalAmount: receiptData.totalamount || calculateTotal(receiptData.charges),
 
     };
 

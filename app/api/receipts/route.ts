@@ -120,6 +120,29 @@ export async function GET(req: Request) {
     await dbConnect();
     console.log("Connected to DB");
 
+    const url = new URL(req.url);
+    if (url.searchParams.get('latest') === 'true') {
+      const latestReceipt = await Receipt.findOne({})
+        .sort({ mrNo: -1 })
+        .select('mrNo')
+        .lean() as ReceiptDocument | null;
+      
+      let nextNumber;
+      if (!latestReceipt) {
+        nextNumber = 'MR8000';
+      } else {
+        // Extract number after 'B' and increment
+        const lastNumber = parseInt(latestReceipt.mrNo.substring(2));
+        const nextNum = isNaN(lastNumber) ? 1 : lastNumber + 1;
+        nextNumber = `MR${nextNum.toString().padStart(4, '0')}`;
+      }
+      
+      console.log('Last receipt:', latestReceipt?.mrNo);
+      console.log('Next number:', nextNumber);
+      
+      return NextResponse.json({ latestmrNo: nextNumber });
+    }
+
     // Get all receipts, sorted by date descending
     const receipts = await Receipt.find({})
       .sort({ createdAt: -1 });
@@ -134,3 +157,9 @@ export async function GET(req: Request) {
     );
   }
 } 
+interface ReceiptDocument {
+  mrNo: string;
+  _id: string;
+  __v: number;
+}
+
