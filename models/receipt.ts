@@ -19,9 +19,9 @@ const ReceiptSchema = new mongoose.Schema({
     billNo: { type: String, required: true },
     NoPackage: { type: String, required: true },
     datebook: { type: Date, required: true },
-    cash: { type: Number, required: false, default: 0 },
-    cheque: { type: Number, required: false, default: 0 },
-    account: { type: Number, required: false, default: 0 },
+    cash: { type: String, required: false, default: 0 },
+    cheque: { type: String, required: false, default: 0 },
+    account: { type: String, required: false, default: 0 },
     rupeestext: { type: String, required: false },
     charges: {
         type: ChargesSchema,

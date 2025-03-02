@@ -204,7 +204,7 @@ export default function CreateBilty() {
                   <Input
                     id="senderaddress"
                     placeholder="Enter Address"
-                    value={formData.senderaddress}
+                    value={formData.senderName}
                     onChange={e => setFormData(prev => ({ ...prev, senderaddress: e.target.value }))}
                     required
                   />
@@ -234,7 +234,7 @@ export default function CreateBilty() {
                   <Input
                     id="toContactNo"
                     placeholder="Enter Mobile Number"
-                    value={formData.toContactNo}
+                    value={formData.fromContactNo}
                     onChange={e => setFormData(prev => ({ ...prev, toContactNo: e.target.value }))}
                     required
                   />
@@ -264,7 +264,7 @@ export default function CreateBilty() {
                   <Input
                     id="toGst"
                     placeholder="Enter Receiver GST"  
-                    value={formData.toGst}
+                    value={formData.fromGst}
                     onChange={e => setFormData(prev => ({ ...prev, toGst: e.target.value }))}
                   />
                 </div>

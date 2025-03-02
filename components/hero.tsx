@@ -1,256 +1,279 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Phone, MapPin, ChevronLeft, ChevronRight, Shield, Clock, Star, Trophy, BadgeCheck, Users } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-
-const carouselData = [
-  {
-    title: "Premium Moving Services",
-    subtitle: "Nationwide & International",
-    description: "Experience hassle-free relocation with India's most trusted moving partner. Professional packing, secure transportation, and dedicated support throughout your journey.",
-    highlights: [
-      "Free video surveys",
-      "Custom crating solutions",
-      "Real-time tracking",
-      "Express delivery options"
-    ],
-    ctaText: "Get Free Quote",
-    image: "/images/moving-service-1.jpg",
-    alt: "Professional movers carefully packing household items"
-  },
-  {
-    title: "Secure Packing Solutions",
-    subtitle: "Industry-Leading Standards",
-    description: "State-of-the-art packing materials and techniques ensure maximum protection for your valuables. Our certified packers handle everything with precision and care.",
-    highlights: [
-      "High-grade materials",
-      "Specialized item handling",
-      "Climate-controlled storage",
-      "Insurance coverage"
-    ],
-    ctaText: "View Packing Services",
-    image: "/images/packing-service.jpg",
-    alt: "Secure packaging materials and professional packing process"
-  },
-  {
-    title: "Global Relocation Experts",
-    subtitle: "Local to International",
-    description: "Seamless moving services across 500+ cities worldwide. Whether you're moving across the street or across continents, we've got you covered.",
-    highlights: [
-      "Door-to-door service",
-      "Customs clearance",
-      "International insurance",
-      "Storage solutions"
-    ],
-    ctaText: "Plan Your Move",
-    image: "/images/nationwide-service.jpg",
-    alt: "Map showing nationwide moving service coverage"
-  }
-]
-
-const achievements = [
-  {
-    icon: Trophy,
-    number: "15+",
-    label: "Years of Excellence",
-    description: "Trusted since 2008"
-  },
-  {
-    icon: Users,
-    number: "10k+",
-    label: "Happy Customers",
-    description: "And counting"
-  },
-  {
-    icon: MapPin,
-    number: "500+",
-    label: "Cities Covered",
-    description: "Nationwide network"
-  },
-  {
-    icon: Star,
-    number: "4.9",
-    label: "Customer Rating",
-    description: "Based on 5000+ reviews"
-  }
-]
+import { ArrowRight, Phone, MapPin, CheckCircle, Shield, Clock, Star, ChevronDown, Truck, Package, Globe, Building2, ClipboardCheck, Warehouse } from "lucide-react"
+import { motion } from "framer-motion"
 
 export default function Hero() {
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [isAutoplay, setIsAutoplay] = useState(true)
-
+  const [isVisible, setIsVisible] = useState(false)
+  const [activeTab, setActiveTab] = useState<'Residential' | 'Commercial' | 'Warehouse'>('Residential')
+  const heroRef = useRef(null)
+  
   useEffect(() => {
-    if (!isAutoplay) return
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % carouselData.length)
-    }, 6000)
-    return () => clearInterval(timer)
-  }, [isAutoplay])
+    setIsVisible(true)
+    
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting)
+      },
+      { threshold: 0.1 }
+    )
+    
+    if (heroRef.current) {
+      observer.observe(heroRef.current)
+    }
+    
+    return () => {
+      if (heroRef.current) {
+        observer.unobserve(heroRef.current)
+      }
+    }
+  }, [])
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % carouselData.length)
-    setIsAutoplay(false)
-  }
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + carouselData.length) % carouselData.length)
-    setIsAutoplay(false)
+  const fadeUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    })
   }
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-gradient-to-r from-gray-900 to-blue-900" aria-label="Hero Section">
-      {/* Background Animation */}
-      <div className="absolute inset-0 z-0">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.7 }}
-            className="h-full w-full"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/60" />
-            <div className="h-full w-full bg-gradient-to-br from-blue-900 via-purple-900 to-blue-900" />
-          </motion.div>
-        </AnimatePresence>
+    <section ref={heroRef} className="relative bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-900 overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-purple-400 blur-3xl" />
+          <div className="absolute top-40 right-20 w-96 h-96 rounded-full bg-blue-400 blur-3xl" />
+          <div className="absolute bottom-20 left-1/3 w-80 h-80 rounded-full bg-indigo-400 blur-3xl" />
+        </div>
       </div>
-
-      <div className="container mx-auto px-4 relative z-10 min-h-screen flex items-center">
-        <div className="max-w-4xl">
-          <AnimatePresence mode="wait">
+      
+      {/* Main Content Container */}
+      <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[85vh]">
+          
+          {/* Left Column - Main Content */}
+          <div className="space-y-8">
+            {/* Badge */}
             <motion.div
-              key={currentSlide}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-6"
+              custom={0}
+              initial="hidden"
+              animate={isVisible ? "visible" : "hidden"}
+              variants={fadeUp}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 rounded-full px-4 py-2 border border-purple-500/20"
             >
-              {/* Trust Badge */}
-              <motion.div 
-                className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 pt-24 py-2"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <BadgeCheck className="w-5 h-5 text-purple-400" />
-                <span className="text-purple-300 font-medium">Hassle Free Relocation</span>
-              </motion.div>
-
-              {/* Main Content */}
-              <div className="space-y-4">
-                <h2 className="text-lg text-purple-400 font-semibold">
-                  {carouselData[currentSlide].subtitle}
-                </h2>
-                <h1 className="text-5xl md:text-7xl font-bold text-white">
-                  {carouselData[currentSlide].title}
-                </h1>
-                <p className="text-xl md:text-2xl text-gray-200">
-                  {carouselData[currentSlide].description}
-                </p>
+              <Star className="w-4 h-4 text-purple-400" />
+              <span className="text-purple-300 font-medium text-sm">Tension Free Shifting</span>
+            </motion.div>
+            
+            {/* Main Heading */}
+            <motion.div 
+              custom={1}
+              initial="hidden"
+              animate={isVisible ? "visible" : "hidden"}
+              variants={fadeUp}
+              className="space-y-4"
+            >
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Seamless</span> Moving Experience
+              </h1>
+              <p className="text-xl text-gray-300 max-w-xl">
+                Transform your relocation with our premium packing, transport, and setup services designed for stress-free transitions.
+              </p>
+            </motion.div>
+            
+            {/* Features List */}
+            <motion.div 
+              custom={2}
+              initial="hidden"
+              animate={isVisible ? "visible" : "hidden"}
+              variants={fadeUp}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4"
+            >
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                <span className="text-gray-200">Free video consultation</span>
               </div>
-
-              {/* Highlights */}
-              <div className="grid grid-cols-2 gap-4 py-6">
-                {carouselData[currentSlide].highlights.map((highlight, index) => (
-                  <motion.div
-                    key={highlight}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 * index }}
-                    className="flex items-center gap-2"
-                  >
-                    <Shield className="w-5 h-5 text-purple-400" />
-                    <span className="text-gray-200">{highlight}</span>
-                  </motion.div>
-                ))}
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                <span className="text-gray-200">Custom packaging solutions</span>
               </div>
-
-              {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button 
-                  size="lg" 
-                  className="gap-2 bg-purple-600 hover:bg-purple-700"
-                  onClick={() => window.location.href = 'tel:18002707001'}
-                >
-                  <Phone className="w-5 h-5" />
-                  {carouselData[currentSlide].ctaText}
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="gap-2 border-white text-black hover:bg-white hover:text-purple-600 transition-colors"
-                  onClick={() => window.location.href = '/contact'}
-                >
-                  Schedule Consultation
-                  <ArrowRight className="w-5 h-5" />
-                </Button>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                <span className="text-gray-200">Real-time shipment tracking</span>
               </div>
-
-              {/* Achievements */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-16">
-                {achievements.map((achievement, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + index * 0.1 }}
-                    className="flex flex-col items-center sm:items-start"
-                  >
-                    <achievement.icon className="w-6 h-6 text-purple-400 mb-2" />
-                    <div className="text-4xl font-bold text-white">{achievement.number}</div>
-                    <div className="text-gray-300 font-medium">{achievement.label}</div>
-                    <div className="text-sm text-gray-400">{achievement.description}</div>
-                  </motion.div>
-                ))}
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                <span className="text-gray-200">Dedicated moving coordinator</span>
               </div>
             </motion.div>
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Carousel Controls */}
-      <div className="absolute bottom-8 left-0 w-full z-20">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {carouselData.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setCurrentSlide(index)
-                    setIsAutoplay(false)
-                  }}
-                  className={`h-2 rounded-full transition-all ${
-                    currentSlide === index ? "w-8 bg-white" : "w-2 bg-white/50"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={prevSlide}
-                className="rounded-full border-white/20 text-white hover:bg-white hover:text-black"
+            
+            {/* CTA Buttons */}
+            <motion.div 
+              custom={3}
+              initial="hidden"
+              animate={isVisible ? "visible" : "hidden"}
+              variants={fadeUp}
+              className="flex flex-col sm:flex-row gap-4 pt-4"
+            >
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white border-0 rounded-xl shadow-lg shadow-purple-700/20"
               >
-                <ChevronLeft className="w-5 h-5" />
+                Get Free Quote
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={nextSlide}
-                className="rounded-full border-white/20 text-white hover:bg-white hover:text-black"
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white border-0 rounded-xl shadow-lg shadow-purple-700/20"
               >
-                <ChevronRight className="w-5 h-5" />
+                <Phone className="w-5 h-5 mr-2" />
+                Contact Us
               </Button>
-            </div>
+            </motion.div>
+            
+            {/* Trust Indicators */}
+            <motion.div 
+              custom={4}
+              initial="hidden"
+              animate={isVisible ? "visible" : "hidden"}
+              variants={fadeUp}
+              className="pt-8 flex flex-wrap items-center gap-x-6 gap-y-4"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-500/10 border border-purple-500/20">
+                  <Shield className="w-6 h-6 text-purple-400" />
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-white">100%</div>
+                  <div className="text-sm text-gray-400">Safe Delivery</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-indigo-500/10 border border-indigo-500/20">
+                  <MapPin className="w-6 h-6 text-indigo-400" />
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-white">500+</div>
+                  <div className="text-sm text-gray-400">Cities Covered</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-pink-500/10 border border-pink-500/20">
+                  <Star className="w-6 h-6 text-pink-400" />
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-white">4.9/5</div>
+                  <div className="text-sm text-gray-400">Customer Rating</div>
+                </div>
+              </div>
+            </motion.div>
           </div>
+          
+          {/* Right Column - 3D Moving Animation */}
+          <motion.div
+            custom={2}
+            initial="hidden"
+            animate={isVisible ? "visible" : "hidden"}
+            variants={fadeUp}
+            className="relative h-full flex items-center justify-center lg:justify-end"
+          >
+            <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+      {/* Service Type Tabs */}
+      <div className="flex border-b mb-6">
+        {['Residential', 'Commercial', 'Warehouse'].map((type, index) => (
+          <button
+            key={index}
+            className={`py-2 px-4 font-medium ${activeTab === type ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
+            onClick={() => setActiveTab(type as 'Residential' | 'Commercial' | 'Warehouse')}
+          >
+            {type}
+          </button>
+        ))}
+      </div>
+      
+      {/* Services */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {activeTab === 'Residential' && [
+          { icon: Truck, title: 'Residential Moving', desc: 'Complete home relocation with white-glove service' },
+          { icon: Package, title: 'Packing Services', desc: 'Professional-grade packaging for all your valuables' },
+          { icon: Globe, title: 'Vehicle Transport', desc: '2 Wheeler & 4 Wheeler Transport' }
+        ].map((service, i) => (
+          <div key={i} className="border rounded-lg p-6 hover:shadow-lg transition duration-300">
+            <div className="flex items-center mb-4">
+              <service.icon className="h-8 w-8 text-blue-500 mr-3" />
+              <h3 className="text-lg font-semibold">{service.title}</h3>
+            </div>
+            <p className="text-gray-600">{service.desc}</p>
+          </div>
+        ))}
+        
+        {activeTab === 'Commercial' && [
+          { icon: Building2, title: 'Office Shifting', desc: 'Minimal downtime business moving with IT equipment handling' },
+          { icon: ClipboardCheck, title: 'Inventory Management', desc: 'Detailed tracking of all office assets during relocation' },
+          { icon: Package, title: 'Equipment Packaging', desc: 'Specialized packaging for sensitive office equipment' }
+        ].map((service, i) => (
+          <div key={i} className="border rounded-lg p-6 hover:shadow-lg transition duration-300">
+            <div className="flex items-center mb-4">
+              <service.icon className="h-8 w-8 text-blue-500 mr-3" />
+              <h3 className="text-lg font-semibold">{service.title}</h3>
+            </div>
+            <p className="text-gray-600">{service.desc}</p>
+          </div>
+        ))}
+        
+        {activeTab === 'Warehouse' && [
+          { icon: Warehouse, title: 'Warehouse Moving', desc: 'Large-scale inventory and equipment transportation' },
+          { icon: ClipboardCheck, title: 'Inventory Tracking', desc: 'Comprehensive tracking systems for all warehouse goods' },
+          { icon: Truck, title: 'Heavy Equipment Transport', desc: 'Vehicles for industrial machinery moving' }
+        ].map((service, i) => (
+          <div key={i} className="border rounded-lg p-6 hover:shadow-lg transition duration-300">
+            <div className="flex items-center mb-4">
+              <service.icon className="h-8 w-8 text-blue-500 mr-3" />
+              <h3 className="text-lg font-semibold">{service.title}</h3>
+            </div>
+            <p className="text-gray-600">{service.desc}</p>
+          </div>
+        ))}
+      </div>
+      
+      {/* Contact Form Teaser */}
+      <div className="bg-blue-50 p-6 rounded-lg text-center">
+        
+        <button className="bg-blue-600 text-white py-3 px-8 rounded-lg font-medium hover:bg-blue-700 transition duration-300 mb-3">
+          Schedule Consultation
+        </button>
+        <p className="text-gray-600">Get a personalized moving plan within 24 hours</p>
+      </div>
+    </div>
+
+          </motion.div>
         </div>
       </div>
+      
+      {/* Scroll Indicator */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, transition: { delay: 1.5, duration: 0.5 } }}
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
+      >
+        <span className="text-purple-300 text-sm mb-2">Scroll to explore</span>
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+        >
+          <ChevronDown className="w-6 h-6 text-purple-400" />
+        </motion.div>
+      </motion.div>
     </section>
   )
 }

@@ -35,7 +35,7 @@ export default async function BillsPage() {
   const initialBills = await getBills()
 
   return (
-    <div className="container mx-auto px-4 pt-24 pb-8">
+    <div className="container mx-auto px-4 pt-6 pb-8">
       <div className="mb-6">
         <BillingNav />
       </div>
