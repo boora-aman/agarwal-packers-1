@@ -140,3 +140,35 @@ export async function PUT(
     )
   }
 }
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  await dbConnect()
+
+  const token = req.headers.get("Authorization")?.split(" ")[1]
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const decodedToken = verifyToken(token)
+  if (!decodedToken || !decodedToken.adminId) {
+    return NextResponse.json({ error: "Unauthorized Access" }, { status: 401 })
+  }
+
+  try {
+    const shipment = await Shipment.findByIdAndDelete(params.id)
+    if (!shipment) {
+      return NextResponse.json({ error: "Shipment not found" }, { status: 404 })
+    }
+
+    return NextResponse.json({ message: "Shipment deleted successfully" })
+  } catch (error) {
+    console.error("DELETE /api/shipments/[id] error:", error)
+    return NextResponse.json(
+      { error: "Failed to delete shipment" },
+      { status: 500 }
+    )
+  }
+}

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Cookies from "js-cookie"
+import { Calendar } from "@/components/ui/calendar" // Add a calendar component for better date selection
 
 type TransitStop = {
   location: string
@@ -192,7 +193,7 @@ export default function CreateShipmentPage() {
               placeholder="Estimated Delivery"
               value={newShipment.estimatedDelivery || ""}
               onChange={handleInputChange}
-              type="date"
+              type="datetime-local"
             />
           </div>
 

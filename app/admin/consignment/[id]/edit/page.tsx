@@ -47,8 +47,21 @@ export default function EditShipmentPage() {
         })
         if (response.ok) {
           const data = await response.json()
-          setShipment(data)
-          setEditTransitStops(data.transitStops)
+
+          // Format dates for input fields
+          const formattedShipment = {
+            ...data,
+            bookingDate: data.bookingDate ? new Date(data.bookingDate).toISOString().slice(0, 16) : "", // Format for datetime-local
+            estimatedDelivery: data.estimatedDelivery ? new Date(data.estimatedDelivery).toISOString().slice(0, 10) : "", // Format for date
+            transitStops: data.transitStops?.map((stop: TransitStop) => ({
+              ...stop,
+              expectedArrival: stop.expectedArrival ? new Date(stop.expectedArrival).toISOString().slice(0, 16) : "", // Format for datetime-local
+              expectedDeparture: stop.expectedDeparture ? new Date(stop.expectedDeparture).toISOString().slice(0, 16) : "", // Format for datetime-local
+            })) || [],
+          }
+
+          setShipment(formattedShipment)
+          setEditTransitStops(formattedShipment.transitStops)
         } else {
           console.error("Failed to fetch shipment")
           if (response.status === 401) {
