@@ -3,6 +3,56 @@ import dbConnect from "@/lib/mongodb"
 import Shipment from "@/models/Shipment"
 import { verifyToken } from "@/lib/auth"
 
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  await dbConnect()
+
+  const token = req.headers.get("Authorization")?.split(" ")[1]
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const decodedToken = verifyToken(token)
+  if (!decodedToken || !decodedToken.adminId) {
+    return NextResponse.json({ error: "Unauthorized Access" }, { status: 401 })
+  }
+
+  try {
+    const shipment = await Shipment.findById(params.id)
+    if (!shipment) {
+      return NextResponse.json({ error: "Shipment not found" }, { status: 404 })
+    }
+
+    // Convert to plain object and format dates
+    const shipmentObj = JSON.parse(JSON.stringify(shipment))
+    const formattedShipment = {
+      ...shipmentObj,
+      _id: shipmentObj._id?.toString(),
+      bookingDate: new Date(shipmentObj.bookingDate).toISOString(),
+      estimatedDelivery: new Date(shipmentObj.estimatedDelivery).toISOString(),
+      transitStops: shipmentObj.transitStops?.map((stop: any) => ({
+        ...stop,
+        expectedArrival: new Date(stop.expectedArrival).toISOString(),
+        expectedDeparture: new Date(stop.expectedDeparture).toISOString()
+      })) || [],
+      updates: shipmentObj.updates?.map((update: any) => ({
+        ...update,
+        date: new Date(update.date).toISOString()
+      })) || []
+    }
+
+    return NextResponse.json(formattedShipment)
+  } catch (error) {
+    console.error("GET /api/shipments/[id] error:", error)
+    return NextResponse.json(
+      { error: "Failed to fetch shipment" },
+      { status: 500 }
+    )
+  }
+}
+
 export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
@@ -15,9 +65,8 @@ export async function PUT(
   }
 
   const decodedToken = verifyToken(token)
-  console.log('Decoded Token:', decodedToken);
   if (!decodedToken || !decodedToken.adminId) {
-    return NextResponse.json({ error: "Unauthorized Acess" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized Access" }, { status: 401 })
   }
 
   try {
