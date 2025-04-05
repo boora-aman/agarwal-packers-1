@@ -15,7 +15,7 @@ export async function GET(
   }
 
   const decodedToken = verifyToken(token)
-  if (!decodedToken || !decodedToken.adminId) {
+  if (!decodedToken || 'error' in decodedToken || !decodedToken.adminId) {
     return NextResponse.json({ error: "Unauthorized Access" }, { status: 401 })
   }
 
@@ -65,7 +65,7 @@ export async function PUT(
   }
 
   const decodedToken = verifyToken(token)
-  if (!decodedToken || !decodedToken.adminId) {
+  if (!decodedToken || 'error' in decodedToken || !decodedToken.adminId) {
     return NextResponse.json({ error: "Unauthorized Access" }, { status: 401 })
   }
 
@@ -153,7 +153,7 @@ export async function DELETE(
   }
 
   const decodedToken = verifyToken(token)
-  if (!decodedToken || !decodedToken.adminId) {
+  if (!decodedToken || 'error' in decodedToken || !decodedToken.adminId) {
     return NextResponse.json({ error: "Unauthorized Access" }, { status: 401 })
   }
 
