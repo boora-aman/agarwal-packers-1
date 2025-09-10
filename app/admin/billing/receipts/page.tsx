@@ -1,125 +1,127 @@
+"use client"
+
 import Link from "next/link";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { BillingNav } from "@/app/admin/billing/components/billing-nav";
 import ReceiptList from "@/app/admin/billing/components/ReceiptList";
-import { cookies } from "next/headers";
-import { Plus } from "lucide-react";
+import { Plus, Loader2, AlertCircle } from "lucide-react";
+import Cookies from "js-cookie";
 
-// Default fallback data structure
-const defaultData = {
-  receipts: [],
-  pagination: {
-    page: 1,
-    limit: 10,
-    totalCount: 0,
-    hasMore: false,
-    totalPages: 0
-  }
+const defaultPagination = {
+  page: 1,
+  limit: 10,
+  totalCount: 0,
+  hasMore: false,
+  totalPages: 0
 };
 
-async function getInitialReceipts() {
-  try {
-    console.log("Server: Starting to fetch initial receipts...");
-    const cookieStore = cookies();
-    const token = cookieStore.get("token")?.value;
-    
-    if (!token) {
-      console.log("Server: No token found for receipts");
-      return defaultData;
-    }
+export default function ReceiptsPage() {
+  const [receipts, setReceipts] = useState([]);
+  const [pagination, setPagination] = useState(defaultPagination);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/receipts?page=1&limit=10`;
-    console.log("Server: Fetching receipts from:", apiUrl);
-    
-    const response = await fetch(apiUrl, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Cache-Control': 'no-cache',
-        'Content-Type': 'application/json'
-      },
-      next: { revalidate: 0 }
-    });
+  const fetchReceipts = useCallback(async (page = 1, append = false) => {
+    try {
+      if (!append) setLoading(true);
+      setError(null);
 
-    console.log("Server: Receipts response status:", response.status);
+      const token = Cookies.get("token");
+      if (!token) {
+        setError("Authentication required. Please login again.");
+        return;
+      }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server: Failed to fetch receipts:', response.status, errorText);
-      return defaultData;
-    }
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    const data = await response.json();
-    console.log('Server: Successfully fetched receipts data:', data);
-    
-    // Validate the response structure
-    if (!data || typeof data !== 'object') {
-      console.error('Server: Invalid receipts response format:', data);
-      return defaultData;
-    }
+      const response = await fetch(`/api/receipts?page=${page}&limit=10`, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Cache-Control': 'no-cache'
+        },
+        signal: controller.signal
+      });
 
-    // Handle both old format (array) and new format (object with receipts and pagination)
-    if (Array.isArray(data)) {
-      console.log('Server: Received old receipts format (array), converting...');
-      return {
-        receipts: data,
-        pagination: {
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (Array.isArray(data)) {
+        if (append) {
+          setReceipts(prev => [...prev, ...data]);
+        } else {
+          setReceipts(data);
+        }
+        setPagination({
           page: 1,
           limit: 10,
           totalCount: data.length,
           hasMore: false,
           totalPages: 1
+        });
+      } else if (data.receipts && data.pagination) {
+        if (append) {
+          setReceipts(prev => [...prev, ...data.receipts]);
+        } else {
+          setReceipts(data.receipts);
         }
-      };
-    }
-
-    // New paginated format
-    const result = {
-      receipts: Array.isArray(data.receipts) ? data.receipts : [],
-      pagination: {
-        page: data.pagination?.page || 1,
-        limit: data.pagination?.limit || 10,
-        totalCount: data.pagination?.totalCount || 0,
-        hasMore: data.pagination?.hasMore || false,
-        totalPages: data.pagination?.totalPages || 0
+        setPagination(data.pagination);
       }
-    };
 
-    console.log('Server: Final processed receipts data:', result);
-    return result;
+      setRetryCount(0);
+      
+    } catch (error) {
+      console.error("Error fetching receipts:", error);
+      
+      if (error.name === 'AbortError') {
+        setError("Request timed out. The server is taking too long to respond.");
+      } else if (error.message.includes('401')) {
+        setError("Authentication expired. Please login again.");
+      } else {
+        setError(`Failed to load receipts: ${error.message}`);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  } catch (error) {
-    console.error("Server: Error fetching receipts:", error);
-    return defaultData;
-  }
-}
+  useEffect(() => {
+    fetchReceipts();
+  }, [fetchReceipts]);
 
-export default async function ReceiptsPage() {
-  console.log("Server: Rendering ReceiptsPage...");
-  const initialData = await getInitialReceipts();
-  
-  console.log("Server: Passing receipts to ReceiptList:", {
-    receiptsCount: initialData.receipts.length,
-    pagination: initialData.pagination
-  });
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    fetchReceipts();
+  };
+
+  const loadMore = () => {
+    if (pagination.hasMore && !loading) {
+      fetchReceipts(pagination.page + 1, true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Mobile-first responsive container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         
-        {/* Responsive Header */}
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
-                Receipts
+                Receipts Management
               </h1>
               <p className="mt-1 text-sm text-gray-600">
                 Manage your receipt records
               </p>
             </div>
             
-            {/* Mobile-optimized Create Button */}
             <div className="flex flex-col sm:flex-row gap-2">
               <Button 
                 asChild 
@@ -136,43 +138,83 @@ export default async function ReceiptsPage() {
           </div>
         </div>
         
-        {/* Navigation - Mobile Responsive */}
         <div className="mb-6">
           <BillingNav />
         </div>
         
-        {/* Main Content - Mobile Responsive Card */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          {/* Card Header */}
           <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
                 <h2 className="text-lg font-medium text-gray-900">Receipts List</h2>
                 <p className="text-sm text-gray-600">
-                  Total: {initialData.pagination.totalCount} receipts
+                  {loading && receipts.length === 0 ? (
+                    "Loading receipts..."
+                  ) : error ? (
+                    "Error loading receipts"
+                  ) : (
+                    `Total: ${pagination.totalCount} receipts`
+                  )}
                 </p>
               </div>
               
-              {/* Mobile stats */}
-              <div className="flex gap-4 text-sm text-gray-500 sm:hidden">
-                <span>Page {initialData.pagination.page}</span>
-                <span>•</span>
-                <span>{initialData.receipts.length} loaded</span>
-              </div>
+              {!loading && !error && (
+                <div className="flex gap-4 text-sm text-gray-500 sm:hidden">
+                  <span>Page {pagination.page}</span>
+                  <span>•</span>
+                  <span>{receipts.length} loaded</span>
+                </div>
+              )}
             </div>
           </div>
           
-          {/* Card Content */}
           <div className="p-4 sm:p-6">
-            <ReceiptList 
-              initialReceipts={initialData.receipts}
-              initialPagination={initialData.pagination}
-            />
+            {loading && receipts.length === 0 && (
+              <div className="text-center py-12">
+                <Loader2 className="mx-auto h-8 w-8 animate-spin text-gray-600" />
+                <p className="mt-2 text-gray-600">Loading receipts...</p>
+              </div>
+            )}
+
+            {error && receipts.length === 0 && (
+              <div className="text-center py-12">
+                <AlertCircle className="mx-auto h-12 w-12 text-red-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load receipts</h3>
+                <p className="text-red-600 mb-4">{error}</p>
+                <Button onClick={handleRetry} variant="outline">
+                  Try Again {retryCount > 0 && `(${retryCount})`}
+                </Button>
+              </div>
+            )}
+
+            {!error && receipts.length > 0 && (
+              <ReceiptList 
+                initialReceipts={receipts}
+                initialPagination={pagination}
+              />
+            )}
+
+            {pagination.hasMore && receipts.length > 0 && (
+              <div className="mt-6 text-center">
+                <Button 
+                  onClick={loadMore}
+                  disabled={loading}
+                  size="lg"
+                  className="w-full sm:w-auto sm:min-w-[200px]"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    `Load More Receipts (${pagination.totalCount - receipts.length} remaining)`
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
-        
-        {/* Mobile-friendly footer space */}
-        <div className="h-20 sm:h-8"></div>
       </div>
     </div>
   );

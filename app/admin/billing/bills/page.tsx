@@ -213,7 +213,7 @@ export default function BillsPage() {
                 <Loader2 className="mx-auto h-8 w-8 animate-spin text-gray-600" />
                 <p className="mt-2 text-gray-600">Loading bills...</p>
                 <p className="mt-1 text-sm text-gray-500">
-                  This may take a moment in production
+                  Fetching data from server, please wait.
                 </p>
               </div>
             )}

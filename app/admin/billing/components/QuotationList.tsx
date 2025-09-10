@@ -1,11 +1,10 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Pencil, Download, Trash2, Car } from "lucide-react"
 import Cookies from "js-cookie"
-import { Pencil, Download, Trash2, Car, Loader2, AlertCircle } from "lucide-react"
 
 interface Quotation {
   _id: string
@@ -32,117 +31,11 @@ interface QuotationsListProps {
   initialPagination: Pagination
 }
 
-// Default pagination to prevent undefined errors
-const defaultPagination: Pagination = {
-  page: 1,
-  limit: 10,
-  totalCount: 0,
-  hasMore: false,
-  totalPages: 0
-}
-
 export default function QuotationsList({ 
-  initialQuotations = [], 
-  initialPagination = defaultPagination 
+  initialQuotations, 
+  initialPagination
 }: QuotationsListProps) {
-  const [quotations, setQuotations] = useState<Quotation[]>(initialQuotations)
-  const [pagination, setPagination] = useState<Pagination>(initialPagination)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-
-  console.log('QuotationsList initialized with:', {
-    quotationsCount: quotations.length,
-    pagination: pagination
-  });
-
-  // Function to fetch quotations with pagination
-  const fetchQuotations = useCallback(async (page: number = 1, append: boolean = false) => {
-    try {
-      console.log(`Fetching quotations - page: ${page}, append: ${append}`);
-      const token = Cookies.get("token")
-      const response = await fetch(`/api/quotations?page=${page}&limit=10`, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Cache-Control': 'no-cache'
-        }
-      })
-
-      console.log('Quotations fetch response status:', response.status);
-
-      if (response.ok) {
-        const data = await response.json()
-        console.log('Client-side fetched quotations data:', data)
-        
-        // Handle both old and new response formats
-        if (Array.isArray(data)) {
-          // Old format - just an array of quotations
-          console.log('Received old quotations format, converting...');
-          if (append) {
-            setQuotations(prevQuotations => [...prevQuotations, ...data])
-          } else {
-            setQuotations(data)
-          }
-          setPagination({
-            page: 1,
-            limit: 10,
-            totalCount: data.length,
-            hasMore: false,
-            totalPages: 1
-          })
-        } else if (data.quotations && data.pagination) {
-          // New format - paginated response
-          console.log('Received new quotations format');
-          if (append) {
-            setQuotations(prevQuotations => [...prevQuotations, ...data.quotations])
-          } else {
-            setQuotations(data.quotations)
-          }
-          setPagination(data.pagination)
-        } else {
-          console.error('Unexpected quotations response format:', data);
-        }
-      } else {
-        const errorText = await response.text();
-        console.error('Failed to fetch quotations:', response.status, errorText)
-        setError(`Failed to fetch quotations: ${response.status}`)
-      }
-    } catch (error) {
-      console.error("Error fetching quotations:", error)
-      setError("Network error while fetching quotations")
-    }
-  }, [])
-
-  // Load more quotations
-  const loadMoreQuotations = useCallback(async () => {
-    if (loading || !pagination?.hasMore) return
-
-    console.log('Loading more quotations...');
-    setLoading(true)
-    setError(null)
-
-    try {
-      await fetchQuotations(pagination.page + 1, true)
-    } catch (error) {
-      setError("Failed to load more quotations")
-    } finally {
-      setLoading(false)
-    }
-  }, [loading, pagination?.hasMore, pagination?.page, fetchQuotations])
-
-  // Periodic refresh (only for the first page)
-  useEffect(() => {
-    console.log('Setting up quotations periodic refresh...');
-    const interval = setInterval(() => {
-      console.log('Quotations periodic refresh triggered');
-      fetchQuotations(1, false) // Refresh first page only
-    }, 30000)
-    
-    return () => {
-      console.log('Clearing quotations periodic refresh');
-      clearInterval(interval)
-    }
-  }, [fetchQuotations])
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this quotation?")) return
@@ -155,15 +48,13 @@ export default function QuotationsList({
       })
 
       if (response.ok) {
-        setQuotations(quotations.filter(q => q._id !== id))
-        // Update pagination count
-        setPagination(prev => ({
-          ...prev,
-          totalCount: Math.max(0, prev.totalCount - 1)
-        }))
+        window.location.reload()
+      } else {
+        alert("Failed to delete quotation")
       }
     } catch (error) {
       console.error("Error deleting quotation:", error)
+      alert("Failed to delete quotation")
     }
   }
 
@@ -175,32 +66,7 @@ export default function QuotationsList({
     return new Date(dateString).toLocaleDateString('en-IN')
   }
 
-  // Show error state
-  if (error && quotations.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <AlertCircle className="mx-auto h-12 w-12 text-red-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading quotations</h3>
-        <p className="text-red-600 mb-4">{error}</p>
-        <Button onClick={() => fetchQuotations(1, false)} variant="outline">
-          Try Again
-        </Button>
-      </div>
-    )
-  }
-
-  // Loading state
-  if (!pagination && quotations.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <Loader2 className="mx-auto h-8 w-8 animate-spin" />
-        <p className="mt-2 text-gray-500">Loading quotations...</p>
-      </div>
-    )
-  }
-
-  // No quotations found
-  if (quotations.length === 0 && !loading) {
+  if (initialQuotations.length === 0) {
     return (
       <div className="text-center py-12">
         <Car className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -216,15 +82,14 @@ export default function QuotationsList({
   return (
     <div className="space-y-4">
       {/* Quotations count info */}
-      {pagination && (
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-sm text-gray-600 mb-4 p-3 bg-gray-50 rounded-lg gap-2">
-          <span>Showing {quotations.length} of {pagination.totalCount} quotations</span>
-          <span className="sm:text-right">Page {pagination.page} of {pagination.totalPages}</span>
-        </div>
-      )}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-sm text-gray-600 mb-4 p-3 bg-gray-50 rounded-lg gap-2">
+        <span>Showing {initialQuotations.length} of {initialPagination.totalCount} quotations</span>
+        <span className="sm:text-right">Page {initialPagination.page} of {initialPagination.totalPages}</span>
+      </div>
 
+      {/* Quotations Grid */}
       <div className="grid gap-3 sm:gap-4">
-        {quotations.map((quotation) => (
+        {initialQuotations.map((quotation) => (
           <Card key={quotation._id} className="border border-gray-200 hover:shadow-md transition-shadow">
             <CardContent className="p-0">
               {/* Header - Red background for quotations */}
@@ -238,7 +103,6 @@ export default function QuotationsList({
                   </p>
                 </div>
                 
-                {/* Mobile-optimized action buttons */}
                 <div className="flex space-x-1 sm:space-x-2 ml-2">
                   <Button 
                     variant="ghost" 
@@ -267,7 +131,7 @@ export default function QuotationsList({
                 </div>
               </div>
 
-              {/* Transport details with vehicle icon */}
+              {/* Quotation Details */}
               <div className="p-3 sm:p-4">
                 <div className="flex items-start gap-3 mb-3">
                   <Car className="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
@@ -283,7 +147,6 @@ export default function QuotationsList({
                   </div>
                 </div>
 
-                {/* Transport route details */}
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-2 text-sm text-gray-600 mb-2">
                   <div className="truncate">
                     <span className="font-medium">Route:</span> {quotation.fromCity} → {quotation.toCity}
@@ -308,52 +171,6 @@ export default function QuotationsList({
           </Card>
         ))}
       </div>
-
-      {/* Load More Button */}
-      {pagination?.hasMore && (
-        <div className="text-center py-6">
-          <Button 
-            onClick={loadMoreQuotations}
-            disabled={loading}
-            size="lg"
-            className="w-full sm:w-auto sm:min-w-[200px]"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              <>
-                <span className="sm:hidden">Load More ({pagination.totalCount - quotations.length})</span>
-                <span className="hidden sm:inline">Load More Quotations ({pagination.totalCount - quotations.length} remaining)</span>
-              </>
-            )}
-          </Button>
-        </div>
-      )}
-
-      {/* Error message for load more */}
-      {error && quotations.length > 0 && (
-        <div className="text-center py-4">
-          <p className="text-red-600 mb-2 text-sm">{error}</p>
-          <Button 
-            onClick={() => fetchQuotations(pagination.page + 1, true)}
-            variant="outline"
-            size="sm"
-            className="w-full sm:w-auto"
-          >
-            Try Again
-          </Button>
-        </div>
-      )}
-
-      {/* End of results */}
-      {!pagination?.hasMore && quotations.length > 0 && pagination.totalCount > 10 && (
-        <div className="text-center py-6 text-gray-500">
-          <p className="text-sm">You've reached the end of the quotations list</p>
-        </div>
-      )}
     </div>
   )
 }
