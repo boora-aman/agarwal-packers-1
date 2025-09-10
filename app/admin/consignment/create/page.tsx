@@ -105,18 +105,36 @@ export default function CreateShipmentPage() {
         return
       }
 
+      // helper: convert a "datetime-local" / local date string to an ISO string (UTC)
+      const localToISOString = (local?: string) => {
+        if (!local) return local
+        const d = new Date(local)
+        if (isNaN(d.getTime())) return local
+        return d.toISOString()
+      }
+
       const token = Cookies.get("token")
+
+      // normalize dates before sending to server
+      const payload = {
+        ...newShipment,
+        bookingDate: localToISOString(newShipment.bookingDate),
+        estimatedDelivery: localToISOString(newShipment.estimatedDelivery),
+        transitStops: transitStops.map((s) => ({
+          ...s,
+          expectedArrival: localToISOString(s.expectedArrival),
+          expectedDeparture: localToISOString(s.expectedDeparture),
+        })),
+        currentLocation: newShipment.origin,
+      }
+
       const response = await fetch("/api/shipments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...newShipment,
-          transitStops,
-          currentLocation: newShipment.origin,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (response.ok) {

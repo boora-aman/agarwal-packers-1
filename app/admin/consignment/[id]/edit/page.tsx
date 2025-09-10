@@ -109,17 +109,36 @@ export default function EditShipmentPage() {
 
     try {
       setError("")
+
+      // helper: convert a "datetime-local" / local date string to an ISO string (UTC)
+      const localToISOString = (local?: string) => {
+        if (!local) return local
+        const d = new Date(local)
+        if (isNaN(d.getTime())) return local
+        return d.toISOString()
+      }
+
       const token = Cookies.get("token")
+
+      // normalize dates before sending to server
+      const payload = {
+        ...shipment,
+        bookingDate: localToISOString(shipment.bookingDate),
+        estimatedDelivery: localToISOString(shipment.estimatedDelivery),
+        transitStops: editTransitStops.map((s) => ({
+          ...s,
+          expectedArrival: localToISOString(s.expectedArrival),
+          expectedDeparture: localToISOString(s.expectedDeparture),
+        })),
+      }
+
       const response = await fetch(`/api/shipments/${shipment._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...shipment,
-          transitStops: editTransitStops,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (response.ok) {
