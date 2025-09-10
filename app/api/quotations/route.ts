@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     // Connect to database
     await dbConnect();
-    console.log("Connected to DB:", process.env.MONGODB_URI); // Will be redacted in logs
+    console.log("Connected to DB for POST quotation");
 
     // Get request data
     const data = await req.json();
@@ -70,10 +70,10 @@ export async function POST(req: Request) {
       insPercentage: data.insPercentage,
       gstPercentage: data.gstPercentage,
       charges,
-      totalAmount: data.totalAmount || totalAmount // Use provided total or calculated
+      totalAmount: data.totalAmount || totalAmount
     };
 
-    console.log("Processed data:", JSON.stringify(quotationData, null, 2));
+    console.log("Processed quotation data:", JSON.stringify(quotationData, null, 2));
 
     // Create new quotation
     const quotation = new Quotation(quotationData);
@@ -85,7 +85,6 @@ export async function POST(req: Request) {
     return NextResponse.json(savedQuotation, { status: 201 });
   } catch (error: any) {
     console.error("Error creating quotation:", error);
-
     if (error.code === 11000) {
       return NextResponse.json(
         { error: "Quotation number already exists" },
@@ -116,54 +115,86 @@ export async function GET(req: Request) {
     // Verify authentication
     const token = req.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
-      console.log("No token provided");
+      console.log("No token provided for quotations");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const decodedToken = verifyToken(token);
     if (!decodedToken || 'error' in decodedToken) {
-      console.log("Invalid token:", decodedToken);
+      console.log("Invalid token for quotations:", decodedToken);
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
     // Connect to database
+    console.log("Connecting to DB for quotations GET...");
     await dbConnect();
+    console.log("Connected to DB for quotations GET");
 
-    // Check if this is a request for the latest quotation number
     const url = new URL(req.url);
+
+    // Handle latest quotation request
     if (url.searchParams.get('latest') === 'true') {
+      console.log("Fetching latest quotation number...");
       const latestQuotation = await Quotation.findOne({})
         .sort({ quotationNo: -1 })
         .select('quotationNo')
         .lean() as QuotationDocument | null;
-      
+
       let nextNumber;
       if (!latestQuotation) {
         nextNumber = 'QT8000';
       } else {
-        // Extract number after 'Q' and increment
         const lastNumber = parseInt(latestQuotation.quotationNo.substring(2));
-        const nextNum = isNaN(lastNumber) ? 1 : lastNumber + 1;
-        nextNumber = `QT${nextNum.toString().padStart(4, '0')}`;
+        const nextNum = isNaN(lastNumber) ? 8000 : lastNumber + 1;
+        nextNumber = `QT${nextNum}`;
       }
-      
+
       console.log('Last quotation:', latestQuotation?.quotationNo);
-      console.log('Next number:', nextNumber);
-      
+      console.log('Next quotation number:', nextNumber);
       return NextResponse.json({ latestQuotationNo: nextNumber });
     }
 
-    // Get all quotations, sorted by date descending
+    // Handle paginated quotations request
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '10');
+    const skip = (page - 1) * limit;
+
+    console.log(`Fetching quotations - page: ${page}, limit: ${limit}, skip: ${skip}`);
+
+    // Get total count for pagination info
+    const totalCount = await Quotation.countDocuments({});
+    console.log(`Total quotations count: ${totalCount}`);
+
+    // Fetch paginated quotations
     const quotations = await Quotation.find({})
-      .sort({ createdAt: -1 });
-    
-    console.log("Fetched quotations:", quotations.length);
-    return NextResponse.json(quotations);
-  } catch (error) {
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const hasMore = skip + quotations.length < totalCount;
+
+    console.log(`Fetched ${quotations.length} quotations (page ${page}, limit ${limit}), hasMore: ${hasMore}`);
+
+    const response = {
+      quotations,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        hasMore,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    };
+
+    console.log('Sending quotations response:', JSON.stringify(response, null, 2));
+    return NextResponse.json(response);
+
+  } catch (error: any) {
     console.error("Error in GET /api/quotations:", error);
     return NextResponse.json(
-      { error: "Failed to fetch quotations" },
+      { error: "Failed to fetch quotations", details: error.message },
       { status: 500 }
     );
   }
-} 
+}

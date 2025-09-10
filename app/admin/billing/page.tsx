@@ -72,18 +72,6 @@ export default function BillingPage() {
           </Card>
         ))}
       </div>
-
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Recent Documents</CardTitle>
-          <CardDescription>Quick overview of your latest billing documents</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-muted-foreground text-center py-8">
-            Select a document type above to view and manage documents
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

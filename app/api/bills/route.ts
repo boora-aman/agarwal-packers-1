@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
     // Connect to database
     await dbConnect();
-    console.log("Connected to DB:", process.env.MONGODB_URI); // Will be redacted in logs
+    console.log("Connected to DB for POST");
 
     // Get request data
     const data = await req.json();
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       insValue: data.insValue,
       GstPercentage: data.GstPercentage,
       charges,
-      totalAmount: data.totalAmount || totalAmount // Use provided total or calculated
+      totalAmount: data.totalAmount || totalAmount
     };
 
     console.log("Processed data:", JSON.stringify(billData, null, 2));
@@ -83,7 +83,6 @@ export async function POST(req: Request) {
     return NextResponse.json(savedBill, { status: 201 });
   } catch (error: any) {
     console.error("Error creating bill:", error);
-
     if (error.code === 11000) {
       return NextResponse.json(
         { error: "Bill number already exists" },
@@ -125,46 +124,81 @@ export async function GET(req: Request) {
     }
 
     // Connect to database
-    console.log("Connecting to DB...");
+    console.log("Connecting to DB for GET...");
     await dbConnect();
-    console.log("Connected to DB");
+    console.log("Connected to DB for GET");
+
     const url = new URL(req.url);
+
+    // Handle latest bill request
     if (url.searchParams.get('latest') === 'true') {
+      console.log("Fetching latest bill number...");
       const latestBill = await Bills.findOne({})
         .sort({ billNo: -1 })
         .select('billNo')
         .lean() as BillsDocument | null;
-      
+
       let nextNumber;
       if (!latestBill) {
         nextNumber = 'BL8000';
       } else {
-        // Extract number after 'B' and increment
         const lastNumber = parseInt(latestBill.billNo.substring(2));
-        const nextNum = isNaN(lastNumber) ? 1 : lastNumber + 1;
-        nextNumber = `BL${nextNum.toString().padStart(4, '0')}`;
+        const nextNum = isNaN(lastNumber) ? 8000 : lastNumber + 1;
+        nextNumber = `BL${nextNum}`;
       }
-      
+
       console.log('Last bill:', latestBill?.billNo);
       console.log('Next number:', nextNumber);
-      
       return NextResponse.json({ latestBillNo: nextNumber });
     }
-    const bills = await Bills.find({}).sort({ createdAt: -1 })
-    
-    return NextResponse.json(bills)
+
+    // Handle paginated bills request
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '10');
+    const skip = (page - 1) * limit;
+
+    console.log(`Fetching bills - page: ${page}, limit: ${limit}, skip: ${skip}`);
+
+    // Get total count for pagination info
+    const totalCount = await Bills.countDocuments({});
+    console.log(`Total bills count: ${totalCount}`);
+
+    // Fetch paginated bills
+    const bills = await Bills.find({})
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const hasMore = skip + bills.length < totalCount;
+
+    console.log(`Fetched ${bills.length} bills (page ${page}, limit ${limit}), hasMore: ${hasMore}`);
+
+    const response = {
+      bills,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        hasMore,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    };
+
+    console.log('Sending response:', JSON.stringify(response, null, 2));
+    return NextResponse.json(response);
+
   } catch (error) {
-    console.error("Error fetching bills:", error)
+    console.error("Error fetching bills:", error);
     return NextResponse.json(
-      { error: "Failed to fetch bills" },
+      { error: "Failed to fetch bills", details: error.message },
       { status: 500 }
-    )
+    );
   }
 }
 
 interface BillsDocument {
-billNo: string;
-_id: string;
-__v: number;
+  billNo: string;
+  _id: string;
+  __v: number;
 }
-

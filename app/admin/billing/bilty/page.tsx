@@ -1,53 +1,179 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { BillingNav } from "@/app/admin/billing/components/billing-nav"
-import BiltyList from "@/app/admin/billing/components/BiltyList"
-import { cookies } from "next/headers"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { BillingNav } from "@/app/admin/billing/components/billing-nav";
+import BiltyList from "@/app/admin/billing/components/BiltyList";
+import { cookies } from "next/headers";
+import { Plus } from "lucide-react";
 
-async function getBilty() {
+// Default fallback data structure
+const defaultData = {
+  bilties: [],
+  pagination: {
+    page: 1,
+    limit: 10,
+    totalCount: 0,
+    hasMore: false,
+    totalPages: 0
+  }
+};
+
+async function getInitialBilty() {
   try {
-    const cookieStore = cookies()
-    const token = cookieStore.get("token")?.value
+    console.log("Server: Starting to fetch initial bilty...");
+    const cookieStore = cookies();
+    const token = cookieStore.get("token")?.value;
     
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/bilty`, {
+    if (!token) {
+      console.log("Server: No token found for bilty");
+      return defaultData;
+    }
+
+    const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/bilty?page=1&limit=10`;
+    console.log("Server: Fetching bilty from:", apiUrl);
+    
+    const response = await fetch(apiUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'no-cache',
+        'Content-Type': 'application/json'
       },
       next: { revalidate: 0 }
-    })
-    
+    });
+
+    console.log("Server: Bilty response status:", response.status);
+
     if (!response.ok) {
-      console.error('Failed to fetch bills:', await response.text())
-      return []
+      const errorText = await response.text();
+      console.error('Server: Failed to fetch bilty:', response.status, errorText);
+      return defaultData;
     }
+
+    const data = await response.json();
+    console.log('Server: Successfully fetched bilty data:', data);
     
-    const data = await response.json()
-    console.log('Server-side fetched bills:', data) // Debug log
-    return data
+    // Validate the response structure
+    if (!data || typeof data !== 'object') {
+      console.error('Server: Invalid bilty response format:', data);
+      return defaultData;
+    }
+
+    // Handle both old format (array) and new format (object with bilties and pagination)
+    if (Array.isArray(data)) {
+      console.log('Server: Received old bilty format (array), converting...');
+      return {
+        bilties: data,
+        pagination: {
+          page: 1,
+          limit: 10,
+          totalCount: data.length,
+          hasMore: false,
+          totalPages: 1
+        }
+      };
+    }
+
+    // New paginated format
+    const result = {
+      bilties: Array.isArray(data.bilties) ? data.bilties : [],
+      pagination: {
+        page: data.pagination?.page || 1,
+        limit: data.pagination?.limit || 10,
+        totalCount: data.pagination?.totalCount || 0,
+        hasMore: data.pagination?.hasMore || false,
+        totalPages: data.pagination?.totalPages || 0
+      }
+    };
+
+    console.log('Server: Final processed bilty data:', result);
+    return result;
+
   } catch (error) {
-    console.error("Error fetching bills:", error)
-    return []
+    console.error("Server: Error fetching bilty:", error);
+    return defaultData;
   }
 }
 
 export default async function BiltyPage() {
-  const initialBilty = await getBilty()
+  console.log("Server: Rendering BiltyPage...");
+  const initialData = await getInitialBilty();
+  
+  console.log("Server: Passing bilty to BiltyList:", {
+    biltiesCount: initialData.bilties.length,
+    pagination: initialData.pagination
+  });
 
   return (
-    <div className="container mx-auto px-4 pt-6 pb-8">
-      <div className="mb-6">
-        <BillingNav />
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile-first responsive container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        
+        {/* Responsive Header */}
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
+                Bilty Management
+              </h1>
+              <p className="mt-1 text-sm text-gray-600">
+                Manage your bilty records
+              </p>
+            </div>
+            
+            {/* Mobile-optimized Create Button */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button 
+                asChild 
+                className="w-full sm:w-auto justify-center sm:justify-start"
+                size="default"
+              >
+                <Link href="/admin/billing/bilty/create" className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Create New Bilty</span>
+                  <span className="sm:hidden">Create Bilty</span>
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Navigation - Mobile Responsive */}
+        <div className="mb-6">
+          <BillingNav />
+        </div>
+        
+        {/* Main Content - Mobile Responsive Card */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          {/* Card Header */}
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <h2 className="text-lg font-medium text-gray-900">Bilty List</h2>
+                <p className="text-sm text-gray-600">
+                  Total: {initialData.pagination.totalCount} bilty records
+                </p>
+              </div>
+              
+              {/* Mobile stats */}
+              <div className="flex gap-4 text-sm text-gray-500 sm:hidden">
+                <span>Page {initialData.pagination.page}</span>
+                <span>•</span>
+                <span>{initialData.bilties.length} loaded</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Card Content */}
+          <div className="p-4 sm:p-6">
+            <BiltyList 
+              initialBilty={initialData.bilties}
+              initialPagination={initialData.pagination}
+            />
+          </div>
+        </div>
+        
+        {/* Mobile-friendly footer space */}
+        <div className="h-20 sm:h-8"></div>
       </div>
-
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Bilty</h1>
-        <Button asChild>
-          <Link href="/admin/billing/bilty/create">Create New Bilty</Link>
-        </Button>
-      </div>
-
-      <BiltyList initialBilty={initialBilty} />
     </div>
-  )
+  );
 }
