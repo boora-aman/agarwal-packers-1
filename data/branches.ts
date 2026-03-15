@@ -138,8 +138,8 @@ export const branches: Branch[] = [
   {
     id: "bhopal",
     city: "Bhopal",
-    address: "MP Nagar, Zone 2, Bhopal - 462011",
-    phone: "+91 9368108590",
+    address: "Shop no 42 Rajdhani, Opp. New RTO Office, Transport Nagar, Kokta, Bhopal 462022, India",
+    phone: "+91 8827396002",
     email: "info@agarwalpackersnmovers.in",
     timings: "Mon-Sat: 9:00 AM - 7:00 PM",
     mapLink: "https://maps.google.com/?q=MP+Nagar+Bhopal",
