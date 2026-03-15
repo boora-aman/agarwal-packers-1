@@ -88,7 +88,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li className="flex items-center">
                 <Phone className="w-5 h-5 mr-2" />
-                <span>+91 9368108590</span>
+                <span>+91 8827396002</span>
               </li>
               <li className="flex items-center">
                 <Mail className="w-5 h-5 mr-2" />
@@ -98,7 +98,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start">
                 <MapPin className="w-5 h-5 mr-2 mt-1" />
-                <span>175, EC Road, Race Course, Dehradun, Uttarakhand 248001, India</span>
+                <span>Shop no 42 Rajdhani, Opp. New RTO Office, Transport Nagar, Kokta, Bhopal 462022, India</span>
               </li>
             </ul>
           </div>
